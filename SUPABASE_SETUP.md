@@ -41,7 +41,6 @@ CREATE POLICY "storage_all" ON storage.objects FOR ALL TO anon, authenticated US
    - Build: (none)
    - Publish: `.`
 
-4. **DONE!** No Python, no build, pure static!
 
 ## Features
 
