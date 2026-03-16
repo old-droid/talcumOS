@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalcumOS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; overflow: hidden; }
+        
+        /* Lock Screen */
+        #lockScreen { position: fixed; inset: 0; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        #lockScreen.hidden { display: none; }
+        .lock-time { font-size: 72px; color: #fff; font-weight: 200; }
+        .lock-date { font-size: 20px; color: rgba(255,255,255,0.7); margin-bottom: 40px; }
+        .passcode-dots { display: flex; gap: 15px; margin-bottom: 30px; }
+        .passcode-dot { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; }
+        .passcode-dot.filled { background: #fff; border-color: #fff; }
+        .passcode-input { position: absolute; opacity: 0; }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .keypad button { width: 70px; height: 70px; border-radius: 50%; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 24px; cursor: pointer; }
+        .keypad button:active { background: rgba(255,255,255,0.3); }
+        .error-msg { color: #ff3b30; margin-top: 20px; height: 20px; }
+        
+        /* Home Screen */
+        #homeScreen { display: none; height: 100vh; background: #f5f5f7; }
+        #homeScreen.active { display: block; }
+        .status-bar { display: flex; justify-content: space-between; padding: 8px 20px; background: #fff; font-size: 12px; }
+        .dock { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); }
+        .dock-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+        .dock-icon img { width: 55px; height: 55px; border-radius: 14px; }
+        .dock-icon span { font-size: 10px; color: #333; }
+        .apps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; padding-bottom: 120px; }
+        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+        .app-icon img { width: 60px; height: 60px; border-radius: 14px; }
+        .app-icon span { font-size: 11px; color: #333; }
+        
+        /* App Windows */
+        .app-window { position: fixed; inset: 0; background: #fff; display: none; flex-direction: column; z-index: 100; }
+        .app-window.active { display: flex; }
+        .app-header { display: flex; align-items: center; padding: 10px 15px; background: #f8f8f8; border-bottom: 1px solid #ddd; }
+        .app-header h2 { flex: 1; font-size: 16px; }
+        .app-header button { background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px 10px; }
+        .app-content { flex: 1; overflow: auto; }
+        
+        /* Settings */
+        .settings-list { padding: 20px; }
+        .settings-item { display: flex; justify-content: space-between; padding: 15px; background: #f8f8f8; border-radius: 10px; margin-bottom: 10px; }
+        
+        /* Tmail */
+        .mail-setup { padding: 30px; text-align: center; }
+        .mail-setup input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        .mail-setup button { width: 100%; padding: 12px; background: #007aff; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+        .mail-list { padding: 10px; }
+        .mail-item { padding: 15px; border-bottom: 1px solid #eee; }
+        .mail-item.unread { background: #e8f4ff; }
+        
+        /* Tchat */
+        .chat-rooms { width: 80px; background: #2c2c2e; color: #fff; padding: 10px 5px; }
+        .chat-room { padding: 10px; text-align: center; font-size: 11px; cursor: pointer; }
+        .chat-room.active { background: #007aff; border-radius: 8px; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; }
+        .chat-msg { max-width: 70%; margin-bottom: 10px; padding: 10px 14px; border-radius: 18px; }
+        .chat-msg.sent { margin-left: auto; background: #007aff; color: #fff; }
+        .chat-msg.received { background: #e5e5ea; }
+        .chat-input { display: flex; padding: 10px; border-top: 1px solid #ddd; }
+        .chat-input input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; }
+        
+        /* Terminal */
+        #terminal-container { background: #0d1117; color: #c9d1d9; padding: 10px; font-family: monospace; height: 100%; overflow-y: auto; }
+        
+        /* Browser */
+        .browser-toolbar { display: flex; gap: 5px; padding: 8px; background: #f8f8f8; }
+        .browser-toolbar input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 20px; }
+        .browser-frame { flex: 1; border: none; }
+    </style>
+</head>
+<body>
+    <!-- Lock Screen -->
+    <div id="lockScreen">
+        <div class="lock-time" id="lockTime">12:00</div>
+        <div class="lock-date" id="lockDate">Monday, January 1</div>
+        
+        <!-- Supabase Setup (shown if not configured) -->
+        <div id="setupPanel" style="display:none; margin-bottom:30px; padding:20px; background:rgba(0,0,0,0.3); border-radius:15px;">
+            <p style="color:#fff; margin-bottom:10px; font-size:12px;">First time? Enter Supabase credentials:</p>
+            <input type="text" id="setupUrl" placeholder="Supabase URL" style="width:200px; padding:8px; margin:5px; border-radius:5px; border:none;">
+            <input type="text" id="setupKey" placeholder="Anon Key" style="width:200px; padding:8px; margin:5px; border-radius:5px; border:none;">
+            <button onclick="saveSupabaseConfig()" style="padding:8px 15px; background:#007aff; color:#fff; border:none; border-radius:5px; cursor:pointer;">Save</button>
+        </div>
+        
+        <div class="passcode-dots">
+            <div class="passcode-dot" id="dot0"></div>
+            <div class="passcode-dot" id="dot1"></div>
+            <div class="passcode-dot" id="dot2"></div>
+            <div class="passcode-dot" id="dot3"></div>
+        </div>
+        <div class="keypad">
+            <button onclick="addDigit(1)">1</button>
+            <button onclick="addDigit(2)">2</button>
+            <button onclick="addDigit(3)">3</button>
+            <button onclick="addDigit(4)">4</button>
+            <button onclick="addDigit(5)">5</button>
+            <button onclick="addDigit(6)">6</button>
+            <button onclick="addDigit(7)">7</button>
+            <button onclick="addDigit(8)">8</button>
+            <button onclick="addDigit(9)">9</button>
+            <button onclick="clearPasscode()">⌫</button>
+            <button onclick="addDigit(0)">0</button>
+            <button onclick="submitPasscode()">⏎</button>
+        </div>
+        <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="homeScreen">
+        <div class="status-bar">
+            <span>▂▄▆</span>
+            <span id="statusTime">12:00</span>
+            <span>80% ▰▰▰▱</span>
+        </div>
+        <div class="apps-grid" id="appsGrid"></div>
+        <div class="dock" id="dock"></div>
+    </div>
+
+    <!-- Settings App -->
+    <div class="app-window" id="settingsApp">
+        <div class="app-header">
+            <button onclick="closeApp('settingsApp')">←</button>
+            <h2>Settings</h2>
+        </div>
+        <div class="app-content">
+            <div class="settings-list">
+                <div class="settings-item"><span>Passcode</span><span>✓</span></div>
+                <div class="settings-item"><span>Wallpaper</span><span>Default</span></div>
+                <div class="settings-item" onclick="logout()"><span>Reset OS</span><span>→</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Browser App -->
+    <div class="app-window" id="browserApp">
+        <div class="app-header">
+            <button onclick="closeApp('browserApp')">←</button>
+            <h2>Browser</h2>
+        </div>
+        <div class="browser-toolbar">
+            <button onclick="goBack()">◀</button>
+            <input type="text" id="browserUrl" placeholder="Search or URL" onkeypress="if(event.key==='Enter')navigateUrl()">
+            <button onclick="navigateUrl()">⏎</button>
+        </div>
+        <iframe class="browser-frame" id="browserFrame"></iframe>
+    </div>
+
+    <!-- Terminal App -->
+    <div class="app-window" id="terminalApp">
+        <div class="app-header">
+            <button onclick="closeApp('terminalApp')">←</button>
+            <h2>Terminal</h2>
+        </div>
+        <div class="app-content" id="terminal-container"></div>
+    </div>
+
+    <!-- TMail App -->
+    <div class="app-window" id="tmailApp">
+        <div class="app-header">
+            <button onclick="closeApp('tmailApp')">←</button>
+            <h2>TMail</h2>
+        </div>
+        <div class="app-content" id="tmailContent"></div>
+    </div>
+
+    <!-- TChat App -->
+    <div class="app-window" id="tchatApp" style="flex-direction: row;">
+        <div class="chat-rooms" id="chatRooms"></div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+            <div class="app-header">
+                <button onclick="closeApp('tchatApp')">←</button>
+                <h2 id="chatRoomName">General</h2>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Message" onkeypress="if(event.key==='Enter')sendChat()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Talumstore App -->
+    <div class="app-window" id="tstoreApp">
+        <div class="app-header">
+            <button onclick="closeApp('tstoreApp')">←</button>
+            <h2>Talumstore</h2>
+            <button onclick="showAddApp()">+</button>
+        </div>
+        <div class="app-content" id="tstoreContent"></div>
+    </div>
+
+    <script>
+        // Supabase Config - Priority: 1) Netlify Env Vars 2) localStorage 3) Setup panel
+        // Netlify env vars are automatically available as global variables
+        const SUPABASE_URL = window.SUPABASE_URL || localStorage.getItem('supabase_url') || '';
+        const SUPABASE_KEY = window.SUPABASE_ANON_KEY || localStorage.getItem('supabase_key') || '';
+        
+        let supabase = null;
+        if (SUPABASE_URL && SUPABASE_KEY) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            localStorage.setItem('supabase_url', SUPABASE_URL);
+            localStorage.setItem('supabase_key', SUPABASE_KEY);
+        }
+
+        // Default Apps
+        const DEFAULT_APPS = [
+            { id: 'browser', name: 'Browser', icon: '🌐', url: 'browserApp', type: 'builtin' },
+            { id: 'tmail', name: 'TMail', icon: '📧', url: 'tmailApp', type: 'builtin' },
+            { id: 'tchat', name: 'Tchat', icon: '💬', url: 'tchatApp', type: 'builtin' },
+            { id: 'terminal', name: 'Terminal', icon: '⌨️', url: 'terminalApp', type: 'builtin' },
+            { id: 'tstore', name: 'Talumstore', icon: '🛒', url: 'tstoreApp', type: 'builtin' },
+            { id: 'settings', name: 'Settings', icon: '⚙️', url: 'settingsApp', type: 'builtin' },
+        ];
+
+        let passcode = '';
+        let customApps = [];
+
+        // Time
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const date = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+            document.getElementById('lockTime').textContent = time;
+            document.getElementById('lockDate').textContent = date;
+            document.getElementById('statusTime').textContent = time;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Passcode
+        function addDigit(d) {
+            if (passcode.length < 4) {
+                passcode += d;
+                updateDots();
+            }
+        }
+
+        function clearPasscode() {
+            passcode = passcode.slice(0, -1);
+            updateDots();
+        }
+
+        function updateDots() {
+            for (let i = 0; i < 4; i++) {
+                document.getElementById('dot' + i).classList.toggle('filled', i < passcode.length);
+            }
+        }
+
+        async function checkPasscode() {
+            if (!supabase) {
+                // First time - save passcode
+                const salt = Math.random().toString(36).substr(2, 8);
+                const hash = btoa(passcode + salt);
+                await supabase.from('settings').upsert({ key: 'passcode', value: JSON.stringify({ salt, hash }) });
+                unlock();
+            } else {
+                // Verify
+                const { data } = await supabase.from('settings').select('value').eq('key', 'passcode').single();
+                if (data?.value) {
+                    const { salt, hash } = JSON.parse(data.value);
+                    if (btoa(passcode + salt) === hash) {
+                        unlock();
+                    } else {
+                        document.getElementById('errorMsg').textContent = 'Wrong passcode';
+                        passcode = '';
+                        updateDots();
+                    }
+                } else {
+                    // First time setup
+                    const salt = Math.random().toString(36).substr(2, 8);
+                    const hash = btoa(passcode + salt);
+                    await supabase.from('settings').upsert({ key: 'passcode', value: JSON.stringify({ salt, hash }) });
+                    unlock();
+                }
+            }
+        }
+
+        function submitPasscode() {
+            if (passcode.length === 4) checkPasscode();
+        }
+
+        function unlock() {
+            document.getElementById('lockScreen').classList.add('hidden');
+            document.getElementById('homeScreen').classList.add('active');
+            loadApps();
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function saveSupabaseConfig() {
+            const url = document.getElementById('setupUrl').value.trim();
+            const key = document.getElementById('setupKey').value.trim();
+            if (!url || !key) {
+                alert('Please enter both URL and Key');
+                return;
+            }
+            localStorage.setItem('supabase_url', url);
+            localStorage.setItem('supabase_key', key);
+            location.reload();
+        }
+
+        // Apps
+        async function loadApps() {
+            const grid = document.getElementById('appsGrid');
+            const dock = document.getElementById('dock');
+            
+            // Load custom apps from Supabase
+            if (supabase) {
+                const { data } = await supabase.from('custom_apps').select('*');
+                customApps = data || [];
+            }
+
+            const allApps = [...DEFAULT_APPS, ...customApps.map(a => ({
+                id: a.id, name: a.name, icon: '📱', url: 'custom_' + a.id, type: 'custom', customUrl: a.custom_url
+            }))];
+
+            // Dock (first 4)
+            dock.innerHTML = allApps.slice(0, 4).map(app => `
+                <div class="dock-icon" onclick="openApp('${app.url}', '${app.type}', '${app.customUrl || ''}')">
+                    <span style="font-size:40px">${app.icon}</span>
+                    <span>${app.name}</span>
+                </div>
+            `).join('');
+
+            // Grid (rest)
+            grid.innerHTML = allApps.slice(4).map(app => `
+                <div class="app-icon" onclick="openApp('${app.url}', '${app.type}', '${app.customUrl || ''}')">
+                    <span style="font-size:40px">${app.icon}</span>
+                    <span>${app.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function openApp(appId, type, customUrl) {
+            if (type === 'custom') {
+                window.open(customUrl, '_blank');
+                return;
+            }
+            
+            const app = document.getElementById(appId);
+            if (app) {
+                app.classList.add('active');
+                
+                if (appId === 'terminalApp') initTerminal();
+                if (appId === 'tmailApp') initMail();
+                if (appId === 'tchatApp') initChat();
+                if (appId === 'tstoreApp') initStore();
+            }
+        }
+
+        function closeApp(appId) {
+            document.getElementById(appId).classList.remove('active');
+        }
+
+        // Terminal
+        let termHistory = [];
+        let termCwd = '/home/user';
+        
+        async function initTerminal() {
+            const container = document.getElementById('terminal-container');
+            if (container.innerHTML.trim()) return;
+            
+            container.innerHTML = '<div id="term-output"></div><div><span style="color:#3fb950">user@talcumos</span>:<span style="color:#58a6ff">~</span>$ </div><input id="term-input" style="background:transparent;border:none;outline:none;color:inherit;font:inherit;">';
+            
+            document.getElementById('term-input').focus();
+            
+            document.getElementById('term-input').onkeypress = async function(e) {
+                if (e.key === 'Enter') {
+                    const cmd = this.value;
+                    termHistory.push(cmd);
+                    container.innerHTML += `<div>${termCwd}$ ${cmd}</div>`;
+                    
+                    // Save to Supabase
+                    if (supabase) {
+                        await supabase.from('settings').upsert({ key: 'terminal_history', value: JSON.stringify({ history: termHistory, cwd: termCwd }) });
+                    }
+                    
+                    const output = execCmd(cmd);
+                    container.innerHTML += `<div>${output}</div><div><span style="color:#3fb950">user@talcumos</span>:<span style="color:#58a6ff">~</span>$ </div><input id="term-input" style="background:transparent;border:none;outline:none;color:inherit;font:inherit;">`;
+                    document.getElementById('term-input').focus();
+                    container.scrollTop = container.scrollHeight;
+                    this.remove();
+                }
+            };
+        }
+
+        function execCmd(cmd) {
+            const c = cmd.trim().split(' ')[0];
+            switch(c) {
+                case 'ls': return 'documents/  downloads/  Desktop/';
+                case 'pwd': return termCwd;
+                case 'whoami': return 'user';
+                case 'date': return new Date().toString();
+                case 'hostname': return 'talcumos';
+                case 'uname': return 'Linux talcumos 1.0';
+                case 'help': return 'ls pwd whoami date hostname uname clear';
+                case 'clear': document.getElementById('terminal-container').innerHTML = ''; return '';
+                case '': return '';
+                default: return `${c}: command not found`;
+            }
+        }
+
+        // TMail
+        async function initMail() {
+            const content = document.getElementById('tmailContent');
+            
+            const { data: config } = await supabase?.from('settings').select('value').eq('key', 'mail_config').single();
+            
+            if (!config?.value) {
+                content.innerHTML = `
+                    <div class="mail-setup">
+                        <h3>Setup TMail</h3>
+                        <input type="email" id="mailEmail" placeholder="your@gmail.com">
+                        <input type="password" id="mailPassword" placeholder="App Password">
+                        <button onclick="saveMailConfig()">Connect</button>
+                        <p style="margin-top:10px;font-size:12px;color:#666">Use Gmail App Password (not regular password)</p>
+                    </div>
+                `;
+            } else {
+                const mailConfig = JSON.parse(config.value);
+                content.innerHTML = `
+                    <div class="mail-setup">
+                        <p>Connected: ${mailConfig.email}</p>
+                        <div class="mail-list">
+                            <div class="mail-item unread"><b>Welcome to TMail</b><br>Configure Gmail App Password to receive emails</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function saveMailConfig() {
+            const email = document.getElementById('mailEmail').value;
+            const password = document.getElementById('mailPassword').value;
+            
+            if (supabase) {
+                await supabase.from('settings').upsert({ key: 'mail_config', value: JSON.stringify({ email, password }) });
+            }
+            initMail();
+        }
+
+        // TChat
+        const rooms = ['General', 'Random', 'Tech'];
+        
+        async function initChat() {
+            const roomsEl = document.getElementById('chatRooms');
+            roomsEl.innerHTML = rooms.map((r, i) => `<div class="chat-room ${i===0?'active':''}" onclick="selectRoom('${r}')">${r}</div>`).join('');
+            selectRoom('General');
+        }
+
+        async function selectRoom(room) {
+            document.getElementById('chatRoomName').textContent = room;
+            document.querySelectorAll('.chat-room').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const msgs = document.getElementById('chatMessages');
+            msgs.innerHTML = '<div class="chat-msg received">Welcome to ' + room + '!</div>';
+            
+            // Load from Supabase
+            if (supabase) {
+                const { data } = await supabase.from('chat_messages').select('*').eq('room_id', room).order('created_at');
+                if (data) {
+                    msgs.innerHTML = data.map(m => `<div class="chat-msg ${m.sender==='You'?'sent':'received'}">${m.content}</div>`).join('');
+                }
+            }
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value;
+            if (!msg) return;
+            
+            const room = document.getElementById('chatRoomName').textContent;
+            
+            document.getElementById('chatMessages').innerHTML += `<div class="chat-msg sent">${msg}</div>`;
+            input.value = '';
+            
+            if (supabase) {
+                await supabase.from('chat_messages').insert({ room_id: room, sender: 'You', content: msg });
+            }
+        }
+
+        // Talumstore
+        async function initStore() {
+            const content = document.getElementById('tstoreContent');
+            
+            const { data: apps } = await supabase?.from('custom_apps').select('*') || { data: [] };
+            
+            content.innerHTML = `
+                <div style="padding:20px">
+                    <h3>Your Apps</h3>
+                    ${(apps||[]).map(a => `<div class="settings-item" onclick="window.open('${a.custom_url}','_blank')">
+                        <span>${a.name}</span>
+                        <span>${a.custom_url}</span>
+                    </div>`).join('') || '<p>No custom apps yet</p>'}
+                    <button onclick="showAddApp()" style="margin-top:20px;padding:15px;background:#007aff;color:#fff;border:none;border-radius:10px;width:100%">+ Add App</button>
+                </div>
+            `;
+        }
+
+        function showAddApp() {
+            const name = prompt('App Name:');
+            const url = prompt('App URL:');
+            if (name && url && supabase) {
+                supabase.from('custom_apps').insert({ id: Date.now().toString(), name, custom_url: url, url: '/custom' });
+                initStore();
+            }
+        }
+
+        // Browser
+        function navigateUrl() {
+            let url = document.getElementById('browserUrl').value;
+            if (!url.startsWith('http')) url = 'https://' + url;
+            document.getElementById('browserFrame').src = url;
+        }
+
+        function goBack() {
+            document.getElementById('browserFrame').src = 'about:blank';
+            closeApp('browserApp');
+        }
+
+        // Init
+        async function init() {
+            // Check if Supabase configured - if not show setup
+            const savedUrl = localStorage.getItem('supabase_url');
+            const savedKey = localStorage.getItem('supabase_key');
+            
+            if (!savedUrl || !savedKey) {
+                document.getElementById('setupPanel').style.display = 'block';
+                document.querySelector('.passcode-dots').style.display = 'none';
+                document.querySelector('.keypad').style.display = 'none';
+                return;
+            }
+            
+            if (!supabase) {
+                // Demo mode - just unlock
+                unlock();
+                return;
+            }
+            
+            const { data } = await supabase.from('settings').select('value').eq('key', 'passcode').single();
+            if (!data) {
+                document.querySelector('.error-msg').textContent = 'Set a passcode';
+            }
+        }
+        
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+version: 2
+
+functions:
+  terminal:
+    path: supabase/functions/terminal
+    verify_jwt: false
+  tbrowser:
+    path: supabase/functions/tbrowser
+    verify_jwt: false
+  tmail-fetch:
+    path: supabase/functions/tmail-fetch
+    verify_jwt: false
+  tmail-send:
+    path: supabase/functions/tmail-send
+    verify_jwt: false
