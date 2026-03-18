@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalcumOS - Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .setup-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .config-section {
+            margin-bottom: 30px;
+        }
+
+        .config-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .setup-btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .setup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .setup-btn:active {
+            transform: translateY(0);
+        }
+
+        .setup-primary {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            color: white;
+        }
+
+        .setup-success {
+            background: linear-gradient(135deg, #34C759 0%, #2CA34B 100%);
+            color: white;
+        }
+
+        .setup-info {
+            background: linear-gradient(135deg, #5AC8FA 0%, #3AA8E0 100%);
+            color: white;
+        }
+
+        .setup-warning {
+            background: linear-gradient(135deg, #FF9500 0%, #E08500 100%);
+            color: white;
+        }
+
+        .setup-danger {
+            background: linear-gradient(135deg, #FF3B30 0%, #D63026 100%);
+            color: white;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            color: #34C759;
+        }
+
+        .status.error {
+            display: block;
+            color: #FF3B30;
+        }
+
+        .status.info {
+            display: block;
+            color: #5AC8FA;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .toggle-visibility {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .toggle-visibility:hover {
+            color: white;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <h1>⚙️ TalcumOS Setup</h1>
+        <p class="subtitle">Configure your Supabase database connection</p>
+
+        <div class="config-section">
+            <h3>🔑 Supabase Configuration</h3>
+            <div class="input-group">
+                <label for="supabaseUrl">Supabase URL</label>
+                <input type="password" id="supabaseUrl" placeholder="Paste your Supabase URL">
+                <button type="button" class="toggle-visibility" onclick="toggleVisibility('supabaseUrl')">👁️</button>
+            </div>
+            <div class="input-group">
+                <label for="supabaseAnonKey">Supabase Anon Key</label>
+                <input type="password" id="supabaseAnonKey" placeholder="Paste your anon key here">
+                <button type="button" class="toggle-visibility" onclick="toggleVisibility('supabaseAnonKey')">👁️</button>
+            </div>
+            <div class="input-group">
+                <label for="supabaseServiceKey">Supabase Service Role Key (Admin)</label>
+                <input type="password" id="supabaseServiceKey" placeholder="Paste your service key here">
+                <button type="button" class="toggle-visibility" onclick="toggleVisibility('supabaseServiceKey')">👁️</button>
+                <p class="hint">⚠️ Never share this key publicly!</p>
+            </div>
+            <div class="input-group">
+                <label for="supabasePat">Supabase Personal Access Token (PAT)</label>
+                <input type="password" id="supabasePat" placeholder="Paste your PAT here">
+                <button type="button" class="toggle-visibility" onclick="toggleVisibility('supabasePat')">👁️</button>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="setup-btn setup-primary" id="saveConfigBtn">
+                💾 Save Configuration
+            </button>
+            <button class="setup-btn setup-success" id="setupDbBtn">
+                🗄️ Setup Database Tables
+            </button>
+            <button class="setup-btn setup-info" id="setupStateDbBtn">
+                📊 Setup State Database
+            </button>
+            <button class="setup-btn setup-warning" id="setupVFSDbBtn">
+                📁 Setup VFS Database
+            </button>
+            <button class="setup-btn setup-warning" id="setupVFSBucketBtn">
+                💾 Create VFS Storage Bucket
+            </button>
+            <button class="setup-btn setup-danger" id="setupOneUserBtn">
+                🔒 Enforce One User Only
+            </button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <a href="springboard.html" class="back-link">← Back to TalcumOS</a>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="kernel.js"></script>
+    
+    <script>
+        // Toggle password visibility
+        function toggleVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+
+        // Load saved config from localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            // Try to load from localStorage first (user-saved config)
+            const savedConfig = localStorage.getItem('talcumos_config');
+            let config = {};
+            
+            if (savedConfig) {
+                try {
+                    config = JSON.parse(savedConfig);
+                } catch (e) {
+                    console.log('Failed to parse saved config');
+                }
+            }
+            
+            // Only pre-fill URL and Anon Key if they exist in saved config
+            // Service Key and PAT are left empty for security
+            document.getElementById('supabaseUrl').value = config.SUPABASE_URL || '';
+            document.getElementById('supabaseAnonKey').value = config.SUPABASE_ANON_KEY || '';
+            document.getElementById('supabaseServiceKey').value = '';
+            document.getElementById('supabasePat').value = '';
+
+            // Setup event listeners
+            document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+            document.getElementById('setupDbBtn').addEventListener('click', setupDatabase);
+            document.getElementById('setupStateDbBtn').addEventListener('click', setupStateDatabase);
+            document.getElementById('setupVFSDbBtn').addEventListener('click', setupVFSDatabase);
+            document.getElementById('setupVFSBucketBtn').addEventListener('click', createVFSBucket);
+            document.getElementById('setupOneUserBtn').addEventListener('click', setupOneUser);
+        });
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
+        }
+
+        function showLoading(button, loading = true) {
+            if (loading) {
+                button.dataset.originalText = button.innerHTML;
+                button.innerHTML = '<span class="spinner"></span> Processing...';
+                button.disabled = true;
+            } else {
+                button.innerHTML = button.dataset.originalText;
+                button.disabled = false;
+            }
+        }
+
+        async function saveConfig() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const anonKey = document.getElementById('supabaseAnonKey').value.trim();
+            const serviceKey = document.getElementById('supabaseServiceKey').value.trim();
+            const pat = document.getElementById('supabasePat').value.trim();
+
+            if (!url || !anonKey) {
+                showStatus('❌ Supabase URL and Anon Key are required!', 'error');
+                return;
+            }
+
+            // Save to localStorage (only URL and Anon Key for security)
+            const configToSave = {
+                SUPABASE_URL: url,
+                SUPABASE_ANON_KEY: anonKey
+            };
+            
+            // Only save service key and PAT if they were provided
+            if (serviceKey) configToSave.SUPABASE_SERVICE_KEY = serviceKey;
+            if (pat) configToSave.SUPABASE_PAT = pat;
+
+            localStorage.setItem('talcumos_config', JSON.stringify(configToSave));
+
+            // Update window.__env
+            window.__env = configToSave;
+
+            // Re-initialize Supabase
+            if (window.DB && window.DB.initSupabase) {
+                window.DB.initSupabase();
+            }
+
+            showStatus('✅ Configuration saved successfully!', 'success');
+        }
+
+        async function setupDatabase() {
+            const btn = document.getElementById('setupDbBtn');
+            showLoading(btn, true);
+            
+            try {
+                await window.DB.setupDatabase();
+                showStatus('✅ Database tables created successfully!', 'success');
+            } catch (e) {
+                showStatus('❌ Database setup failed: ' + e.message, 'error');
+            } finally {
+                showLoading(btn, false);
+            }
+        }
+
+        async function setupStateDatabase() {
+            const btn = document.getElementById('setupStateDbBtn');
+            showLoading(btn, true);
+            
+            try {
+                await window.DB.setupStateDatabase();
+                showStatus('✅ State database tables created successfully!', 'success');
+            } catch (e) {
+                showStatus('❌ State database setup failed: ' + e.message, 'error');
+            } finally {
+                showLoading(btn, false);
+            }
+        }
+
+        async function setupVFSDatabase() {
+            const btn = document.getElementById('setupVFSDbBtn');
+            showLoading(btn, true);
+            
+            try {
+                await window.DB.setupVFSDatabase();
+                showStatus('✅ VFS database tables created successfully!', 'success');
+            } catch (e) {
+                showStatus('❌ VFS database setup failed: ' + e.message, 'error');
+            } finally {
+                showLoading(btn, false);
+            }
+        }
+
+        async function createVFSBucket() {
+            const btn = document.getElementById('setupVFSBucketBtn');
+            showLoading(btn, true);
+            
+            try {
+                await window.DB.createVFSBucket();
+                showStatus('✅ VFS storage bucket created successfully!', 'success');
+            } catch (e) {
+                showStatus('❌ VFS bucket creation failed: ' + e.message, 'error');
+            } finally {
+                showLoading(btn, false);
+            }
+        }
+
+        async function setupOneUser() {
+            const btn = document.getElementById('setupOneUserBtn');
+            showLoading(btn, true);
+            
+            try {
+                await window.DB.setupOneUserEnforcement();
+                showStatus('✅ One user enforcement enabled!', 'success');
+            } catch (e) {
+                showStatus('❌ One user enforcement failed: ' + e.message, 'error');
+            } finally {
+                showLoading(btn, false);
+            }
+        }
+    </script>
+</body>
+</html>
