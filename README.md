@@ -1,4 +1,5 @@
 # TalcumOS
+<img width="2000" height="2000" alt="talcum" src="https://github.com/user-attachments/assets/4c3235c9-5ddf-4f58-93f1-1fb3034bf7d7" />
 
 A web-based operating system interface built with Supabase authentication and a virtual file system.
 
