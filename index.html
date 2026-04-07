@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>talcumOS</title>
+    <style>
+        :root {
+            --ios-blue: #007AFF;
+            --ios-bg: #f2f2f7;
+            --ios-glass: rgba(255, 255, 255, 0.7);
+            --ios-text: #000;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; background: #000; color: white; height: 100vh; }
+        
+        .wallpaper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e3a8a, #7c3aed, #db2777); background-size: 400% 400%; animation: gradient 15s ease infinite; z-index: -1; }
+        @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* Lock Screen */
+        #lock-screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 80px 20px 50px; z-index: 100; backdrop-filter: blur(10px); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .time { font-size: 80px; font-weight: 200; }
+        .date { font-size: 20px; margin-top: -10px; }
+        .unlock-area { width: 100%; max-width: 300px; background: rgba(255,255,255,0.2); padding: 20px; border-radius: 20px; text-align: center; }
+        #url-input { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-top: 10px; background: rgba(255,255,255,0.3); color: white; outline: none; }
+        #url-input::placeholder { color: rgba(255,255,255,0.6); }
+
+        /* Home Screen */
+        #home-screen { display: none; padding: 60px 20px; height: 100vh; }
+        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; }
+        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+        .icon-box { width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .app-label { font-size: 12px; font-weight: 500; }
+
+        /* App Window */
+        .app-window { position: fixed; inset: 0; background: var(--ios-bg); color: var(--ios-text); display: none; flex-direction: column; z-index: 50; animation: appOpen 0.3s ease-out; }
+        @keyframes appOpen { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .app-header { padding: 40px 20px 10px; display: flex; justify-content: space-between; align-items: center; background: var(--ios-glass); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .app-content { flex: 1; overflow-y: auto; padding: 20px; }
+        .btn-close { color: var(--ios-blue); font-weight: 600; cursor: pointer; }
+
+        /* Specific App UIs */
+        .notes-area { width: 100%; height: 100%; border: none; resize: none; font-size: 16px; outline: none; background: transparent; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .calc-btn { aspect-ratio: 1; border-radius: 50%; border: none; font-size: 24px; font-weight: 500; cursor: pointer; }
+        .calc-display { font-size: 48px; text-align: right; padding: 20px; margin-bottom: 20px; }
+
+        /* Exit Modal */
+        #exit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+        .modal-content { background: white; color: black; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; }
+        .link-box { background: #f0f0f0; padding: 15px; border-radius: 10px; word-break: break-all; margin: 15px 0; font-family: monospace; font-size: 12px; }
+        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--ios-blue); color: white; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="wallpaper"></div>
+
+    <!-- Lock Screen -->
+    <div id="lock-screen">
+        <div style="text-align: center;">
+            <div class="time" id="clock">09:41</div>
+            <div class="date" id="date">Monday, June 22</div>
+        </div>
+        <div class="unlock-area">
+            <p>Provide URL to Login</p>
+            <input type="text" id="url-input" placeholder="Paste link or leave blank for new">
+            <button class="btn" onclick="login()">Login</button>
+        </div>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="home-screen">
+        <div class="app-grid">
+            <div class="app-icon" onclick="openApp('notes')">
+                <div class="icon-box" style="background: #FF9500;">📝</div>
+                <div class="app-label">Notes</div>
+            </div>
+            <div class="app-icon" onclick="openApp('calculator')">
+                <div class="icon-box" style="background: #5856D6;">🔢</div>
+                <div class="app-label">Calculator</div>
+            </div>
+            <div class="app-icon" onclick="openApp('weather')">
+                <div class="icon-box" style="background: #5AC8FA;">☀️</div>
+                <div class="app-label">Weather</div>
+            </div>
+            <div class="app-icon" onclick="openApp('exit')">
+                <div class="icon-box" style="background: #FF3B30;">🚪</div>
+                <div class="app-label">Exit</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Windows -->
+    <div id="app-notes" class="app-window">
+        <div class="app-header">
+            <span style="font-weight: 600;">Notes</span>
+            <span class="btn-close" onclick="closeApp()">Done</span>
+        </div>
+        <div class="app-content">
+            <textarea class="notes-area" id="notes-data" placeholder="Start typing..."></textarea>
+        </div>
+    </div>
+
+    <div id="app-calculator" class="app-window">
+        <div class="app-header">
+            <span style="font-weight: 600;">Calculator</span>
+            <span class="btn-close" onclick="closeApp()">Done</span>
+        </div>
+        <div class="app-content" style="background: #000; color: white;">
+            <div class="calc-display" id="calc-display">0</div>
+            <div class="calc-grid">
+                <button class="calc-btn" style="background: #A5A5A5; color: black;" onclick="calc('C')">C</button>
+                <button class="calc-btn" style="background: #A5A5A5; color: black;" onclick="calc('+/-')">+/-</button>
+                <button class="calc-btn" style="background: #A5A5A5; color: black;" onclick="calc('%')">%</button>
+                <button class="calc-btn" style="background: #FF9F0A;" onclick="calc('/')">÷</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('7')">7</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('8')">8</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('9')">9</button>
+                <button class="calc-btn" style="background: #FF9F0A;" onclick="calc('*')">×</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('4')">4</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('5')">5</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('6')">6</button>
+                <button class="calc-btn" style="background: #FF9F0A;" onclick="calc('-')">-</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('1')">1</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('2')">2</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('3')">3</button>
+                <button class="calc-btn" style="background: #FF9F0A;" onclick="calc('+')">+</button>
+                <button class="calc-btn" style="background: #333; grid-column: span 2; border-radius: 40px; aspect-ratio: auto;" onclick="calc('0')">0</button>
+                <button class="calc-btn" style="background: #333;" onclick="calc('.')">.</button>
+                <button class="calc-btn" style="background: #FF9F0A;" onclick="calc('=')">=</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-weather" class="app-window">
+        <div class="app-header">
+            <span style="font-weight: 600;">Weather</span>
+            <span class="btn-close" onclick="closeApp()">Done</span>
+        </div>
+        <div class="app-content" style="text-align: center; background: linear-gradient(#5AC8FA, #007AFF); color: white;">
+            <div style="font-size: 24px; margin-top: 40px;">San Francisco</div>
+            <div style="font-size: 96px; font-weight: 200;">72°</div>
+            <div style="font-size: 20px;">Mostly Sunny</div>
+            <div style="margin-top: 20px;">H:78° L:62°</div>
+        </div>
+    </div>
+
+    <!-- Exit Modal -->
+    <div id="exit-modal">
+        <div class="modal-content">
+            <h2>Exit talcumOS</h2>
+            <p style="font-size: 14px; color: #666; margin-top: 10px;">Your data is saved in this link. Store it somewhere safe like <b>Google Keep Web</b> to access it later.</p>
+            <div class="link-box" id="export-link"></div>
+            <button class="btn" onclick="copyLink()">Copy Link</button>
+            <button class="btn" style="background: #f0f0f0; color: black;" onclick="document.getElementById('exit-modal').style.display='none'">Cancel</button>
+            <button class="btn" style="background: #FF3B30;" onclick="location.reload()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        let osData = { notes: "" };
+        let calcState = { display: "0", prev: null, op: null, reset: false };
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('date').textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function login() {
+            const input = document.getElementById('url-input').value;
+            let hash = "";
+            if (input.includes('#')) {
+                hash = input.split('#')[1];
+            } else if (window.location.hash) {
+                hash = window.location.hash.substring(1);
+            }
+            
+            if (hash) {
+                try {
+                    const decodedData = decodeURIComponent(escape(atob(hash)));
+                    osData = JSON.parse(decodedData);
+                    document.getElementById('notes-data').value = osData.notes || "";
+                } catch (e) { 
+                    console.error(e);
+                    if (input) alert("Invalid link!"); 
+                }
+            }
+            
+            document.getElementById('lock-screen').style.transform = 'translateY(-100%)';
+            setTimeout(() => {
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('home-screen').style.display = 'block';
+            }, 500);
+        }
+
+        // Auto-login if hash exists
+        window.onload = () => {
+            if (window.location.hash) {
+                document.getElementById('url-input').value = window.location.href;
+            }
+        };
+
+        function openApp(id) {
+            if (id === 'exit') {
+                osData.notes = document.getElementById('notes-data').value;
+                const dataStr = JSON.stringify(osData);
+                const encodedData = btoa(unescape(encodeURIComponent(dataStr)));
+                const link = window.location.origin + window.location.pathname + "#" + encodedData;
+                document.getElementById('export-link').textContent = link;
+                document.getElementById('exit-modal').style.display = 'flex';
+                return;
+            }
+            document.getElementById('app-' + id).style.display = 'flex';
+        }
+
+        function closeApp() {
+            document.querySelectorAll('.app-window').forEach(w => w.style.display = 'none');
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(document.getElementById('export-link').textContent);
+            alert("Link copied to clipboard!");
+        }
+
+        function calc(btn) {
+            const display = document.getElementById('calc-display');
+            if (!isNaN(btn) || btn === '.') {
+                if (calcState.reset) { display.textContent = btn; calcState.reset = false; }
+                else display.textContent = display.textContent === "0" ? btn : display.textContent + btn;
+            } else if (btn === 'C') {
+                display.textContent = "0"; calcState = { display: "0", prev: null, op: null, reset: false };
+            } else if (['+', '-', '*', '/'].includes(btn)) {
+                calcState.prev = parseFloat(display.textContent);
+                calcState.op = btn;
+                calcState.reset = true;
+            } else if (btn === '=') {
+                if (calcState.op) {
+                    const current = parseFloat(display.textContent);
+                    let res = 0;
+                    if (calcState.op === '+') res = calcState.prev + current;
+                    if (calcState.op === '-') res = calcState.prev - current;
+                    if (calcState.op === '*') res = calcState.prev * current;
+                    if (calcState.op === '/') res = calcState.prev / current;
+                    display.textContent = res;
+                    calcState.op = null;
+                    calcState.reset = true;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
