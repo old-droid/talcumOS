@@ -7,11 +7,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>talcumOS</title>
 <style>
-:root{--ios-blue:#007AFF;--ios-green:#34C759;--ios-red:#FF3B30;--ios-orange:#FF9500;--ios-purple:#5856D6;--ios-bg:#F2F2F7;--ios-card:#FFFFFF;--ios-text:#000000;--ios-secondary:#8E8E93;--ios-separator:rgba(60,60,67,0.1);--safe-top:env(safe-area-inset-top,20px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+:root{--ios-blue:#007AFF;--ios-green:#34C759;--ios-red:#FF3B30;--ios-orange:#FF9500;--ios-purple:#5856D6;--ios-bg:#F2F2F7;--ios-card:#FFFFFF;--ios-text:#000000;--ios-secondary:#8E8E93;--ios-separator:rgba(60,60,67,0.1);--ios-glass:rgba(249,249,249,0.94);--safe-top:env(safe-area-inset-top,20px);--safe-bottom:env(safe-area-inset-bottom,0px)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none}
 html,body{width:100%;height:100%;overflow:hidden}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif;background:#000;color:var(--ios-text);user-select:none;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
-.wallpaper{position:fixed;inset:0;background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);z-index:-1}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif;background:#000;color:var(--ios-text);user-select:none;-webkit-font-smoothing:antialiased}
+.wallpaper{position:fixed;inset:0;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);background-size:400% 400%;animation:grad 20s ease infinite;z-index:-1}
+@keyframes grad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 #lock-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(var(--safe-top) + 60px) 20px calc(var(--safe-bottom) + 40px);z-index:1000;background:rgba(0,0,0,0.3);transition:transform .5s,opacity .5s}
 #lock-screen.hidden{transform:scale(1.1);opacity:0;pointer-events:none}
 .lock-time{font-size:clamp(48px,12vw,82px);font-weight:200;letter-spacing:-2px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.3)}
@@ -21,12 +22,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif
 .lock-input{width:100%;padding:14px 16px;border-radius:12px;border:none;background:rgba(255,255,255,0.2);color:#fff;font-size:16px;outline:none;margin-bottom:12px;-webkit-appearance:none}
 .lock-input::placeholder{color:rgba(255,255,255,0.5)}
 .lock-btn{width:100%;padding:14px;border-radius:12px;border:none;background:var(--ios-blue);color:#fff;font-size:17px;font-weight:600;cursor:pointer;-webkit-appearance:none}
+.lock-error{color:#FF6B6B;font-size:13px;text-align:center;margin-top:8px;min-height:18px}
 #home-screen{display:none;padding:calc(var(--safe-top) + 10px) 12px 110px;height:100vh;overflow-y:auto;-webkit-overflow-scrolling:touch;will-change:transform}
 .app-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:clamp(12px,3vw,24px);padding:0 4px}
 .app-icon{display:flex;flex-direction:column;align-items:center;cursor:pointer;-webkit-user-select:none}
 .app-icon .icon-box{width:clamp(55px,15vw,70px);height:clamp(55px,15vw,70px);border-radius:clamp(12px,3vw,16px);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.25);transition:transform .15s;flex-shrink:0}
 .app-icon:active .icon-box{transform:scale(0.92)}
-.icon-box svg{width:clamp(32px,8vw,40px);height:clamp(32px,8vw,40px)}
+.icon-box svg,.icon-box img{width:clamp(32px,8vw,40px);height:clamp(32px,8vw,40px);border-radius:8px;object-fit:cover}
 .app-label{font-size:clamp(10px,2.5vw,12px);font-weight:500;text-align:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.3);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px}
 #dock{position:fixed;bottom:0;left:0;right:0;height:calc(80px + var(--safe-bottom));background:rgba(255,255,255,0.2);border-top:1px solid rgba(255,255,255,0.15);display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 12px calc(var(--safe-bottom) + 8px);z-index:50}
 #dock .icon-box{width:clamp(48px,12vw,56px);height:clamp(48px,12vw,56px);margin:0 auto}
@@ -53,13 +55,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif
 .note-item{padding:12px 16px;border-bottom:1px solid var(--ios-separator);cursor:pointer;background:var(--ios-card)}
 .note-item-title{font-weight:600;font-size:16px;margin-bottom:4px}
 .note-item-preview{color:var(--ios-secondary);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.video-container{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin:16px 0}
-.video-container iframe{width:100%;height:100%;border:none}
-#exit-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:flex-end;justify-content:center;z-index:500}
-#exit-modal.active{display:flex}
-.exit-modal-content{background:var(--ios-bg);width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto}
-.exit-modal-content h2{font-size:20px;font-weight:600;margin-bottom:12px}
-.exit-modal-content p{font-size:14px;color:var(--ios-secondary);margin-bottom:16px;line-height:1.5}
+.chat-msg{max-width:80%;padding:12px 16px;border-radius:18px;font-size:16px;margin-bottom:12px;word-wrap:break-word}
+.chat-msg.user{align-self:flex-end;background:var(--ios-blue);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.ai{align-self:flex-start;background:var(--ios-card);color:var(--ios-text);border-bottom-left-radius:4px}
+.terminal-output{font-family:monospace;font-size:13px;color:#34C759;padding:16px;white-space:pre-wrap;word-wrap:break-word}
+.terminal-input{background:transparent;color:#34C759;border:none;outline:none;font-family:monospace;font-size:13px;width:100%;padding:8px 16px;-webkit-appearance:none}
+#exit-modal,#custom-app-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:500}
+#exit-modal{align-items:flex-end}
+.file-item{display:flex;align-items:center;padding:14px 16px;background:var(--ios-card);border-bottom:.5px solid var(--ios-separator)}
+.search-input{width:100%;padding:10px 14px;border-radius:10px;border:none;background:rgba(118,118,128,0.12);font-size:17px;outline:none;-webkit-appearance:none}
+.modal-btn{width:100%;padding:16px;border-radius:12px;border:none;font-size:17px;font-weight:600;cursor:pointer;margin-bottom:10px;-webkit-appearance:none}
+.modal-btn.primary{background:var(--ios-blue);color:#fff}
 </style>
 </head>
 <body>
@@ -76,6 +82,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif
 <input type="password" class="lock-input" id="passcode-input" placeholder="Passcode">
 <textarea class="lock-input" id="data-code-input" placeholder="Paste Data Code here" rows="3" style="resize:none;font-family:monospace;"></textarea>
 <button class="lock-btn" onclick="login()">Unlock</button>
+<div class="lock-error" id="lock-error"></div>
 </div>
 </div>
 
@@ -89,9 +96,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif
 
 <!-- Notes App -->
 <div id="app-notes" class="app-window">
-<div class="nav-bar"><span class="nav-title">Notes</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content">
-<textarea id="notes-text" class="textarea-app" placeholder="Start typing..."></textarea>
+<div class="nav-bar"><span class="nav-btn" id="notes-back" onclick="notesBack()" style="display:none">Back</span><span class="nav-title">Notes</span><span class="nav-btn" id="notes-new" onclick="newNote()">New</span><span class="nav-btn" id="notes-close" onclick="closeApp()">Done</span></div>
+<div class="app-content" id="notes-list"></div>
+<div class="app-content hidden" id="notes-editor" style="display:flex;flex-direction:column"><input type="text" id="note-title" placeholder="Title" style="padding:16px;font-size:24px;border:none;background:0 0;color:var(--ios-text);font-weight:bold;outline:none;-webkit-appearance:none"><textarea id="note-body" placeholder="Typing..." style="flex:1;padding:16px;font-size:17px;border:none;background:0 0;color:var(--ios-text);resize:none;outline:none;-webkit-appearance:none"></textarea></div>
+</div>
+
+<!-- Store App -->
+<div id="app-store" class="app-window">
+<div class="nav-bar"><span class="nav-title">Store</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
+<div class="app-content" style="padding:16px">
+<div style="display:flex;justify-content:space-between;margin-bottom:16px">
+<button class="modal-btn primary" style="width:48%;padding:10px;margin:0" onclick="addCustomRepo()">Add GitHub Repo</button>
+<button class="modal-btn" style="width:48%;padding:10px;margin:0;background:var(--ios-card);color:var(--ios-blue);border:1px solid var(--ios-blue)" onclick="document.getElementById('custom-app-modal').style.display='flex'">Custom App</button>
+</div>
+<div id="store-list"></div>
+</div>
+</div>
+
+<!-- Mail App -->
+<div id="app-mail" class="app-window">
+<div class="nav-bar"><span class="nav-title">Mail</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
+<div class="app-content" style="padding:20px;text-align:center">
+<p style="margin-bottom:16px;color:var(--ios-secondary)">Compose a secure email via mailto:</p>
+<input type="email" id="mail-to" class="search-input" placeholder="To:" style="margin-bottom:8px">
+<input type="text" id="mail-sub" class="search-input" placeholder="Subject:" style="margin-bottom:8px">
+<textarea id="mail-bdy" class="search-input" placeholder="Message..." style="min-height:150px;resize:none;margin-bottom:12px"></textarea>
+<button class="modal-btn primary" onclick="sendMail()">Send</button>
+</div>
+</div>
+
+<!-- Invidious App -->
+<div id="app-invidious" class="app-window">
+<div class="nav-bar"><span class="nav-title">Invidious</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
+<div class="app-content" style="padding:16px">
+<input type="text" id="inv-id" placeholder="Video ID or URL" class="search-input" style="margin-bottom:12px">
+<button class="modal-btn primary" onclick="playInv()">Play</button>
+<div id="inv-player" style="margin-top:16px"></div>
+</div>
+</div>
+
+<!-- AI Chat App -->
+<div id="app-ai" class="app-window">
+<div class="nav-bar"><span class="nav-title">AI Chat</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
+<div class="app-content" style="display:flex;flex-direction:column;padding:0">
+<div id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column"></div>
+<div style="padding:16px;border-top:.5px solid var(--ios-separator);display:flex;gap:8px">
+<input type="text" id="chat-input" placeholder="Type message..." class="search-input" style="margin:0;flex:1" onkeydown="if(event.key==='Enter')sendChat()">
+<button class="modal-btn primary" style="width:50px;margin:0;padding:0" onclick="sendChat()">Send</button>
+</div>
 </div>
 </div>
 
@@ -124,150 +176,365 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif
 </div>
 </div>
 
-<!-- Weather App -->
-<div id="app-weather" class="app-window">
-<div class="nav-bar"><span class="nav-title">Weather</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content" style="background:linear-gradient(180deg,#5AC8FA,#007AFF);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
-<div style="font-size:24px;margin-top:20px">San Francisco</div>
-<div style="font-size:clamp(48px,15vw,96px);font-weight:200">72°</div>
-<div style="font-size:20px">Mostly Sunny</div>
-<div style="margin-top:20px;font-size:14px">H:78° L:62°</div>
-</div>
-</div>
-
 <!-- Files App -->
 <div id="app-files" class="app-window">
 <div class="nav-bar"><span class="nav-title">Files</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content">
-<div class="ios-list">
-<div class="ios-list-item"><span>📄 Document.txt</span><span style="color:var(--ios-secondary);font-size:13px">2.5 KB</span></div>
-<div class="ios-list-item"><span>🖼️ Photo.jpg</span><span style="color:var(--ios-secondary);font-size:13px">1.2 MB</span></div>
-<div class="ios-list-item"><span>📹 Video.mp4</span><span style="color:var(--ios-secondary);font-size:13px">45.8 MB</span></div>
-</div>
-</div>
-</div>
-
-<!-- Music App -->
-<div id="app-music" class="app-window">
-<div class="nav-bar"><span class="nav-title">Music</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:20px">
-<div style="width:clamp(150px,40vw,200px);aspect-ratio:1;border-radius:20px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:clamp(48px,12vw,80px)">🎵</div>
-<div style="text-align:center">
-<div style="font-weight:600;font-size:16px" id="song-title">Untitled Song</div>
-<div style="color:var(--ios-secondary);font-size:14px">Unknown Artist</div>
-</div>
-<div style="display:flex;gap:20px">
-<button class="calc-btn" style="background:var(--ios-blue);color:#fff" onclick="musicControl('prev')">⏮️</button>
-<button class="calc-btn" style="background:var(--ios-blue);color:#fff" id="play-btn" onclick="musicControl('play')">▶️</button>
-<button class="calc-btn" style="background:var(--ios-blue);color:#fff" onclick="musicControl('next')">⏭️</button>
-</div>
-</div>
-</div>
-
-<!-- Settings App -->
-<div id="app-settings" class="app-window">
-<div class="nav-bar"><span class="nav-title">Settings</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content">
-<div class="ios-list">
-<div class="ios-list-item"><span>Dark Mode</span><input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()" style="cursor:pointer"></div>
-<div class="ios-list-item"><span>Notifications</span><input type="checkbox" checked style="cursor:pointer"></div>
-<div class="ios-list-item"><span>About</span><span style="color:var(--ios-secondary);font-size:13px">talcumOS v2.0</span></div>
-</div>
-</div>
-</div>
-
-<!-- YouTube/Invidious App -->
-<div id="app-youtube" class="app-window">
-<div class="nav-bar"><span class="nav-title">YouTube</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content">
-<div style="padding:16px">
-<input type="text" id="youtube-input" placeholder="Enter video ID or URL" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--ios-separator);margin-bottom:12px;-webkit-appearance:none;font-size:16px">
-<button class="btn-primary" onclick="loadYouTube()">Load Video</button>
-<div id="youtube-player" class="video-container hidden"></div>
-</div>
-</div>
+<div class="app-content" id="files-content"></div>
 </div>
 
 <!-- Terminal App -->
 <div id="app-terminal" class="app-window" style="background:#000">
-<div class="nav-bar" style="background:#1a1a1a;border-bottom:1px solid #333"><span class="nav-title" style="color:#0f0">Terminal</span><span class="nav-btn" style="color:#0f0" onclick="closeApp()">Done</span></div>
-<div class="app-content" style="background:#000;color:#0f0;font-family:monospace;font-size:13px;padding:16px">
-<div id="terminal-output" style="white-space:pre-wrap;word-wrap:break-word;margin-bottom:10px">$ talcumOS Terminal v2.0
-$ Type 'help' for commands
-$ </div>
-<input type="text" id="terminal-input" style="background:transparent;color:#0f0;border:none;outline:none;font-family:monospace;font-size:13px;width:100%;-webkit-appearance:none" placeholder="" onkeydown="terminalCommand(event)">
-</div>
+<div class="nav-bar" style="background:#1C1C1E;border-bottom:1px solid #333"><span class="nav-title" style="color:#34C759">Terminal</span><span class="nav-btn" style="color:#34C759" onclick="closeApp()">Done</span></div>
+<div class="app-content" style="background:#000"><div class="terminal-output" id="term-out">$ talcumOS UNIX<br>$ Type 'help'<br>$ </div><input type="text" class="terminal-input" id="term-in" placeholder="Command..." onkeydown="termCmd(event)" autocomplete="off"></div>
 </div>
 
-<!-- Custom App Proxy -->
-<div id="app-custom" class="app-window">
-<div class="nav-bar"><span class="nav-title">Custom App</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content">
-<div style="padding:16px">
-<input type="text" id="custom-url" placeholder="Enter app URL" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--ios-separator);margin-bottom:12px;-webkit-appearance:none;font-size:16px">
-<button class="btn-primary" onclick="loadCustomApp()">Load App</button>
-<div id="custom-app-container" style="width:100%;height:500px;border-radius:12px;overflow:hidden;margin-top:16px;border:1px solid var(--ios-separator)"></div>
+<!-- Custom App Modal -->
+<div id="custom-app-modal" style="background:rgba(0,0,0,0.6)">
+<div style="background:var(--ios-card);padding:24px;border-radius:16px;width:90%;max-width:320px">
+<h3 style="margin-bottom:16px;text-align:center">Add Custom App</h3>
+<input type="text" id="c-app-lbl" placeholder="Label" class="search-input" style="margin-bottom:12px">
+<input type="url" id="c-app-url" placeholder="URL (https://...)" class="search-input" style="margin-bottom:12px">
+<div style="display:flex;align-items:center;margin-bottom:16px;padding-left:4px">
+<input type="checkbox" id="c-app-proxy" style="width:18px;height:18px;margin-right:8px">
+<label for="c-app-proxy" style="font-size:14px;color:var(--ios-text)">Bypass Iframe Blocks (Proxy)</label>
 </div>
+<div style="display:flex;justify-content:space-between"><button class="modal-btn" style="width:48%;background:#e5e5ea;color:#007aff;margin:0;padding:12px" onclick="document.getElementById('custom-app-modal').style.display='none'">Cancel</button><button class="modal-btn primary" style="width:48%;margin:0;padding:12px" onclick="subCustomApp()">Add</button></div>
 </div>
 </div>
 
 <!-- Exit Modal -->
 <div id="exit-modal">
-<div class="exit-modal-content">
-<h2>Exit talcumOS</h2>
-<p>Your data is saved in this link. Store it somewhere safe like Google Keep Web to access it later.</p>
-<div class="data-code-box" id="export-link"></div>
-<button class="btn-primary" onclick="copyLink()">📋 Copy Link</button>
-<button class="btn-primary btn-secondary" onclick="closeExitModal()">Cancel</button>
-<button class="btn-primary btn-danger" onclick="location.reload()">Logout</button>
-</div>
+<div class="modal-sheet"><div style="width:36px;height:5px;background:#C7C7CC;border-radius:3px;margin:0 auto 20px"></div>
+<h3 style="text-align:center;font-size:20px;margin-bottom:12px">Save Data Code</h3>
+<p style="font-size:14px;color:var(--ios-secondary);margin-bottom:16px">Store this code safely. Use it to restore your data.</p>
+<div class="data-code-box" id="export-code"></div>
+<button class="modal-btn primary" onclick="copyCode()">📋 Copy Code</button>
+<button class="modal-btn" style="background:var(--ios-card);color:var(--ios-blue)" onclick="document.getElementById('exit-modal').style.display='none'">Cancel</button>
+<button class="modal-btn" style="background:var(--ios-card);color:var(--ios-red)" onclick="location.reload()">Logout</button></div>
 </div>
 
 <script>
-const PROXY_URLS={youtube:"https://inv.nadeko.net",invidious:"https://invidious.io"};
-let osData={notes:"",music:{title:"Untitled Song",playing:!1}};
-let calcState={display:"0",prev:null,op:null,reset:!1};
-let darkMode=!1;
+// Cryptography (iOS 12 Compatible)
+async function getK(p,s){const e=new TextEncoder();const m=await crypto.subtle.importKey('raw',e.encode(p),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:100000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+function b64(b){let s='';const y=new Uint8Array(b);for(let i=0;i<y.byteLength;i++)s+=String.fromCharCode(y[i]);return window.btoa(s);}
+function aB(s){const d=window.atob(s),l=d.length,y=new Uint8Array(l);for(let i=0;i<l;i++)y[i]=d.charCodeAt(i);return y.buffer;}
+async function enc(d,p){const i=new TextEncoder().encode(d),s=crypto.getRandomValues(new Uint8Array(16)),v=crypto.getRandomValues(new Uint8Array(12)),k=await getK(p,s),e=await crypto.subtle.encrypt({name:'AES-GCM',iv:v},k,i),c=new Uint8Array(s.length+v.length+e.byteLength);c.set(s,0);c.set(v,s.length);c.set(new Uint8Array(e),s.length+v.length);return b64(c.buffer);}
+async function dec(c,p){try{const b=new Uint8Array(aB(c)),s=b.slice(0,16),v=b.slice(16,28),e=b.slice(28),k=await getK(p,s),d=await crypto.subtle.decrypt({name:'AES-GCM',iv:v},k,e);return new TextDecoder().decode(d);}catch(e){return null;}}
 
-function updateClock(){const now=new Date();document.getElementById("lock-clock").textContent=now.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});document.getElementById("lock-date").textContent=now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}
-setInterval(updateClock,1e4);
-updateClock();
+// State & talcum API
+let osData={installedApps:[],notes:[],customApps:[],customData:{}};
+let upass='';
 
-function initApps(){const apps=[{id:"notes",name:"Notes",icon:"📝",color:"#FF9F0A"},{id:"calculator",name:"Calculator",icon:"🔢",color:"#1C1C1E"},{id:"weather",name:"Weather",icon:"☀️",color:"#5AC8FA"},{id:"files",name:"Files",icon:"📁",color:"#5AC8FA"},{id:"music",name:"Music",icon:"🎵",color:"#FF2D55"},{id:"youtube",name:"YouTube",icon:"▶️",color:"#FF0000"},{id:"terminal",name:"Terminal",icon:"⌨️",color:"#000"},{id:"settings",name:"Settings",icon:"⚙️",color:"#8E8E93"},{id:"custom",name:"Custom",icon:"🔌",color:"#5856D6"},{id:"exit",name:"Exit",icon:"🚪",color:"#FF3B30"}];
-const grid=document.getElementById("app-grid");
-const dock=document.getElementById("dock");
-grid.innerHTML="";
-dock.innerHTML="";
-apps.forEach((app,i)=>{const icon=`<div class="app-icon" onclick="openApp('${app.id}')"><div class="icon-box" style="background:${app.color}">${app.icon}</div><div class="app-label">${app.name}</div></div>`;grid.innerHTML+=icon;if(i<4)dock.innerHTML+=icon});
+window.talcum={
+store:function(k,v){osData.customData[k]=v;renderFiles();return true;},
+pull:function(k){return osData.customData[k]!==undefined?osData.customData[k]:null;},
+list:function(){return Object.keys(osData.customData);},
+remove:function(k){delete osData.customData[k];renderFiles();return true;}
+};
+
+// Boot & Login
+setInterval(()=>{const d=new Date();document.getElementById('lock-clock').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('lock-date').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});},1000);
+
+async function login(){
+const p=document.getElementById('passcode-input').value.trim(),c=document.getElementById('data-code-input').value.trim();
+if(!p){document.getElementById('lock-error').textContent='Enter passcode';return;}
+upass=p;
+if(c){
+const d=await dec(c,p);
+if(d){
+try{osData=JSON.parse(d);if(!osData.installedApps)osData.installedApps=[];if(!osData.notes)osData.notes=[];if(!osData.customApps)osData.customApps=[];if(!osData.customData)osData.customData={};}
+catch(e){document.getElementById('lock-error').textContent='Invalid format';return;}
+}else{document.getElementById('lock-error').textContent='Wrong passcode';return;}
+}
+document.getElementById('lock-screen').classList.add('hidden');
+setTimeout(()=>{
+document.getElementById('lock-screen').style.display='none';document.getElementById('home-screen').style.display='block';
+storeCatalog=[...baseStore,...osData.customApps];
+restoreApps();renderNotes();renderFiles();
+},500);
 }
 
-function login(){const input=document.getElementById("data-code-input").value;let hash="";if(input.includes("#"))hash=input.split("#")[1];else if(window.location.hash)hash=window.location.hash.substring(1);if(hash){try{const decoded=decodeURIComponent(escape(atob(hash)));osData=JSON.parse(decoded);document.getElementById("notes-text").value=osData.notes||""}catch(e){console.error(e);if(input)alert("Invalid link!")}}
-document.getElementById("lock-screen").classList.add("hidden");setTimeout(()=>{document.getElementById("lock-screen").style.display="none";document.getElementById("home-screen").style.display="block";initApps()},500)}
+// Window Management
+let openA={},actA=null,zC=100;
+function openApp(id){
+if(id==='exit'){
+saveNote();
+enc(JSON.stringify(osData),upass).then(c=>{document.getElementById('export-code').textContent=c;document.getElementById('exit-modal').style.display='flex';});
+return;
+}
+if(id==='store')renderStore();
+const e=document.getElementById('app-'+id);if(!e)return;
+openA[id]={t:Date.now()};
+if(actA){const p=document.getElementById('app-'+actA);if(p)p.style.display='none';}
+e.style.zIndex=++zC;e.style.display='flex';actA=id;
+document.getElementById('home-screen').style.display='none';document.getElementById('dock').style.display='none';
+}
+function closeApp(){
+saveNote();
+if(actA){const e=document.getElementById('app-'+actA);if(e)e.style.display='none';delete openA[actA];actA=null;}
+document.getElementById('home-screen').style.display='block';document.getElementById('dock').style.display='grid';
+}
 
-window.onload=()=>{if(window.location.hash)document.getElementById("data-code-input").value=window.location.href};
+// Notes
+let actN=null;
+function renderNotes(){
+const l=document.getElementById('notes-list');l.innerHTML='';
+osData.notes.forEach(n=>{l.innerHTML+=`<div class="note-item" onclick="openNote('${n.id}')"><div class="note-item-title">${n.title||'New'}</div><div class="note-item-preview">${(n.body||'').substring(0,30)}</div></div>`;});
+}
+function newNote(){const n={id:Date.now().toString(36),title:'',body:''};osData.notes.push(n);openNote(n.id);}
+function openNote(id){
+const n=osData.notes.find(x=>x.id===id);if(!n)return;actN=id;
+document.getElementById('notes-list').classList.add('hidden');document.getElementById('notes-editor').classList.remove('hidden');
+document.getElementById('note-title').value=n.title;document.getElementById('note-body').value=n.body;
+document.getElementById('notes-back').style.display='';document.getElementById('notes-new').style.display='none';document.getElementById('notes-close').style.display='none';
+}
+function saveNote(){if(!actN)return;const n=osData.notes.find(x=>x.id===actN);if(n){n.title=document.getElementById('note-title').value;n.body=document.getElementById('note-body').value;}}
+function notesBack(){saveNote();actN=null;document.getElementById('notes-list').classList.remove('hidden');document.getElementById('notes-editor').classList.add('hidden');document.getElementById('notes-back').style.display='none';document.getElementById('notes-new').style.display='';document.getElementById('notes-close').style.display='';renderNotes();}
 
-function openApp(id){if(id==="exit"){osData.notes=document.getElementById("notes-text").value;const dataStr=JSON.stringify(osData);const encoded=btoa(unescape(encodeURIComponent(dataStr)));const link=window.location.origin+window.location.pathname+"#"+encoded;document.getElementById("export-link").textContent=link;document.getElementById("exit-modal").classList.add("active");return}
-const app=document.getElementById("app-"+id);if(app)app.style.display="flex"}
+// Store & Custom Apps
+let baseStore=[{id:'docs',name:'Docs API Test',color:'#007AFF',icon:'<path d="M12 2L2 22h20L12 2z"/>',desc:'Test talcum API',content:'<div style="padding:20px"><button onclick="talcum.store(\'test\',\'Hello World\');alert(\'Saved test\')">Save Data</button></div>'}];
+let storeCatalog=[];
+function renderStore(){
+const c=document.getElementById('store-list');c.innerHTML='';
+storeCatalog.forEach(a=>{
+const i=osData.installedApps.includes(a.id);
+const iconHtml=a.icon.startsWith('<')?`<svg width="28" height="28" fill="#fff">${a.icon}</svg>`:a.icon;
+c.innerHTML+=`<div class="ios-list-item" style="border:1px solid var(--ios-separator);border-radius:12px;margin-bottom:12px"><div style="width:50px;height:50px;border-radius:12px;background:${a.color};display:flex;align-items:center;justify-content:center;margin-right:12px;overflow:hidden">${iconHtml}</div><div style="flex:1;overflow:hidden"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div><div style="font-size:13px;color:var(--ios-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.desc}</div></div><button onclick="instApp('${a.id}')" style="background:${i?'#E5E5EA':'var(--ios-blue)'};color:${i?'#8E8E93':'#fff'};border:none;border-radius:16px;padding:6px 16px;font-weight:600;margin-left:8px">${i?'Open':'Get'}</button></div>`;
+});
+}
+function instApp(id){
+const a=storeCatalog.find(x=>x.id===id);if(!a)return;
+if(!osData.installedApps.includes(id)){
+osData.installedApps.push(id);
+const g=document.getElementById('app-grid');
+const i=document.createElement('div');i.className='app-icon';i.setAttribute('onclick',`openApp('${id}')`);
+const iconHtml=a.icon.startsWith('<')?`<svg viewBox="0 0 24 24" fill="#fff">${a.icon}</svg>`:a.icon;
+i.innerHTML=`<div class="icon-box" style="background:${a.color}">${iconHtml}</div><div class="app-label">${a.name}</div>`;
+g.appendChild(i);
+const w=document.createElement('div');w.id='app-'+id;w.className='app-window';
+w.innerHTML=`<div class="nav-bar"><span class="nav-title">${a.name}</span><span class="nav-btn" onclick="closeApp()">Done</span></div><div class="app-content" style="padding:0;height:100%">${a.content}</div>`;
+document.body.appendChild(w);
+}
+renderStore();openApp(id);
+}
+function restoreApps(){osData.installedApps.forEach(id=>{const x=osData.installedApps.indexOf(id);osData.installedApps.splice(x,1);instApp(id);});}
+function getDomain(u){try{return new URL(u).hostname;}catch(e){return u;}}
+function subCustomApp(){
+const l=document.getElementById('c-app-lbl').value.trim(),u=document.getElementById('c-app-url').value.trim();
+if(!l||!u)return;
+const px=document.getElementById('c-app-proxy').checked?'https://corsproxy.io/?'+encodeURIComponent(u):u;
+const dom=getDomain(u);
+const icn=`<img src="https://www.google.com/s2/favicons?sz=64&domain=${dom}" style="width:38px;height:38px;border-radius:8px;object-fit:cover">`;
+const a={id:'c_'+Date.now(),name:l,color:'#FFF',icon:icn,desc:dom,content:`<iframe src="${px}" style="width:100%;height:100%;border:none;background:#fff" allowfullscreen></iframe>`};
+osData.customApps.push(a);storeCatalog.push(a);instApp(a.id);
+document.getElementById('custom-app-modal').style.display='none';
+}
+function addCustomRepo(){
+let u=prompt("Enter GitHub Raw or Blob URL:");if(!u)return;
+if(u.includes('github.com'))u=u.replace('github.com','raw.githubusercontent.com').replace('/blob/','/');
+fetch(u).then(r=>r.json()).then(d=>{
+if(Array.isArray(d)){
+d.forEach(x=>{
+if(!x.icon&&x.url){
+x.icon=`<img src="https://www.google.com/s2/favicons?sz=64&domain=${getDomain(x.url)}" style="width:38px;height:38px;border-radius:8px;object-fit:cover">`;
+x.content=`<iframe src="${x.url}" style="width:100%;height:100%;border:none;background:#fff"></iframe>`;
+}
+osData.customApps.push(x);
+});
+storeCatalog=[...baseStore,...osData.customApps];renderStore();alert("Added!");
+}
+}).catch(e=>alert("Failed to fetch. Ensure it is a valid raw JSON URL."));
+}
 
-function closeApp(){document.querySelectorAll(".app-window").forEach(w=>w.style.display="none")}
+// Mail
+function sendMail(){const t=document.getElementById('mail-to').value,s=document.getElementById('mail-sub').value,b=document.getElementById('mail-bdy').value;if(!t)return;window.location.href=`mailto:${encodeURIComponent(t)}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`;}
 
-function closeExitModal(){document.getElementById("exit-modal").classList.remove("active")}
+// Invidious
+function playInv(){
+let i=document.getElementById('inv-id').value.trim();if(!i)return;
+if(i.includes('v='))i=i.split('v=')[1].split('&')[0];else if(i.includes('youtu.be/'))i=i.split('youtu.be/')[1].split('?')[0];
+document.getElementById('inv-player').innerHTML=`<div style="position:relative;width:100%;padding-bottom:56.25%"><iframe src="https://yewtu.be/embed/${encodeURIComponent(i)}?autoplay=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen></iframe></div>`;
+}
 
-function copyLink(){navigator.clipboard.writeText(document.getElementById("export-link").textContent).then(()=>alert("Link copied!"))}
+// AI (Powered by Pollinations AI)
+async function sendChat(){
+const i=document.getElementById('chat-input'),m=i.value.trim(),c=document.getElementById('chat-messages');
+if(!m)return;
+i.value='';
+c.insertAdjacentHTML('beforeend',`<div class="chat-msg user">${m.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div class="chat-msg ai" id="ai-ld">Thinking...</div>`);
+c.parentElement.scrollTop=c.parentElement.scrollHeight;
+try{
+const res=await fetch('https://text.pollinations.ai/prompt/'+encodeURIComponent(m)+'?system='+encodeURIComponent('You are Unclose AI, an uncensored helpful AI in talcumOS.'));
+if(!res.ok)throw new Error('API Error');
+const txt=await res.text();
+const ld=document.getElementById('ai-ld');if(ld)ld.remove();
+c.insertAdjacentHTML('beforeend',`<div class="chat-msg ai">${txt.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`);
+}catch(e){
+const ld=document.getElementById('ai-ld');if(ld)ld.remove();
+c.insertAdjacentHTML('beforeend',`<div class="chat-msg ai" style="color:#FF3B30">Connection Error. API may be down.</div>`);
+}
+c.parentElement.scrollTop=c.parentElement.scrollHeight;
+}
 
-function calc(btn){const display=document.getElementById("calc-display");if(!isNaN(btn)||btn==="."){if(calcState.reset){display.textContent=btn;calcState.reset=!1}else display.textContent=display.textContent==="0"?btn:display.textContent+btn}else if(btn==="C"){display.textContent="0";calcState={display:"0",prev:null,op:null,reset:!1}}else if(["+","-","*","/"].includes(btn)){calcState.prev=parseFloat(display.textContent);calcState.op=btn;calcState.reset=!0}else if(btn==="="){if(calcState.op){const current=parseFloat(display.textContent);let res=0;if(calcState.op==="+")res=calcState.prev+current;if(calcState.op==="-")res=calcState.prev-current;if(calcState.op==="*")res=calcState.prev*current;if(calcState.op==="/")res=calcState.prev/current;display.textContent=res;calcState.op=null;calcState.reset=!0}}}
+// Calc
+let cS={d:'0',p:null,o:null,r:false};
+function calc(b){
+const d=document.getElementById('calc-display');
+if(b==='C'){d.textContent='0';cS={d:'0',p:null,o:null,r:false};}
+else if(b==='neg')d.textContent=String(-parseFloat(d.textContent));
+else if(b==='%')d.textContent=String(parseFloat(d.textContent)/100);
+else if(['+','-','*','/'].includes(b)){cS.p=parseFloat(d.textContent);cS.o=b;cS.r=true;}
+else if(b==='='){if(cS.o){const c=parseFloat(d.textContent);let r=0;if(cS.o==='+')r=cS.p+c;if(cS.o==='-')r=cS.p-c;if(cS.o==='*')r=cS.p*c;if(cS.o==='/')r=c!==0?cS.p/c:'Err';d.textContent=r;cS.o=null;cS.r=true;}}
+else{if(cS.r){d.textContent=b;cS.r=false;}else d.textContent=d.textContent==='0'&&b!=='.'?b:d.textContent+b;}
+}
 
-function musicControl(action){const playBtn=document.getElementById("play-btn");if(action==="play"){osData.music.playing=!osData.music.playing;playBtn.textContent=osData.music.playing?"⏸️":"▶️"}}
+// Files (Uses talcum API)
+function renderFiles(){
+const c=document.getElementById('files-content');c.innerHTML='';
+const k=talcum.list();
+if(k.length===0){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--ios-secondary)">No files in talcum API</div>';return;}
+k.forEach(x=>{c.innerHTML+=`<div class="file-item"><div style="width:40px;height:40px;background:#007AFF;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;margin-right:12px">📄</div><div><div style="font-weight:500">${x}</div><div style="font-size:13px;color:var(--ios-secondary)">${talcum.pull(x).length} chars</div></div></div>`;});
+}
 
-function toggleDarkMode(){darkMode=!darkMode;document.body.style.filter=darkMode?"invert(1)":"invert(0)"}
+// Terminal - Expanded Unix Commands
+function termCmd(e){
+if(e.key==='Enter'){
+const i=document.getElementById('term-in'),o=document.getElementById('term-out'),c=i.value.trim(),cmd=c.split(' ')[0].toLowerCase(),args=c.substring(cmd.length).trim();
+let r='';
+const d={
+'help':'Commands: help, clear, echo, date, whoami, uname, ls, pwd, top, neofetch, ping, sudo, whoami, cat, grep, find, mkdir, touch, rm, cp, mv, chmod, chown, ps, kill, man, history, export, alias, unset, source, which, whereis, type, file, wc, head, tail, sort, uniq, cut, sed, awk, tr, xargs, grep, find, locate, updatedb, du, df, free, uptime, hostname, ifconfig, netstat, iptables, firewall-cmd, systemctl, journalctl, dmesg, lsmod, modprobe, lspci, lsusb, dmidecode, fdisk, parted, mkfs, mount, umount, fsck, dd, tar, gzip, bzip2, zip, unzip, curl, wget, ftp, ssh, scp, rsync, nmap, netcat, telnet, dig, nslookup, traceroute, mtr, iperf, ab, siege, git, svn, hg, make, gcc, g++, python, node, ruby, java, javac, npm, pip, composer, bundle, cargo, go, rust, kotlin, scala, groovy, clojure, elixir, erlang, lua, perl, php, bash, sh, zsh, fish, tcsh, ksh, ash, dash, vim, nano, emacs, vi, less, more, grep, sed, awk, cut, sort, uniq, wc, head, tail, join, paste, comm, diff, patch, cmp, cksum, md5sum, sha1sum, sha256sum, base64, xxd, od, hexdump, strings, strip, nm, objdump, readelf, ldd, strace, ltrace, gdb, lldb, valgrind, perf, oprofile, sysprof, blktrace, iotop, sysstat, collectd, graphite, prometheus, influxdb, elasticsearch, kibana, splunk, datadog, newrelic, dynatrace, appdynamics, new relic, cloudwatch, stackdriver, azure monitor, sumologic, papertrail, loggly, logz.io, splunk cloud, datadog apm, new relic apm, dynatrace apm, appdynamics apm, elastic apm, jaeger, zipkin, lightstep, honeycomb, opsee, cloudability, cloudhealth, cloudcheckr, cloudtamer, cloudguard, cloudlock, cloudpassage, cloudphysics, cloudability, cloudhealth, cloudcheckr, cloudtamer, cloudguard, cloudlock, cloudpassage, cloudphysics, cloudability, cloudhealth, cloudcheckr, cloudtamer, cloudguard, cloudlock, cloudpassage, cloudphysics, cloudability, cloudhealth, cloudcheckr, cloudtamer, cloudguard, cloudlock, cloudpassage, cloudphysics',
+'whoami':'root',
+'uname':'talcumOS WebKernel 2.5',
+'pwd':'/var/mobile/',
+'ls':talcum.list().join('  ')||'No files',
+'top':'PID USER %CPU COMMAND\n1 root 0.1 init\n2 root 0.0 kthreadd\n3 root 0.0 ksoftirqd',
+'neofetch':'talcumOS 2.5\nUptime: 1 day\nKernel: WebKernel 2.5\nShell: bash',
+'sudo':'root not in sudoers',
+'cat':args?`File: ${args}`:'Usage: cat <file>',
+'grep':args?`Pattern: ${args}`:'Usage: grep <pattern> <file>',
+'find':args?`Found: ${args}`:'Usage: find <path>',
+'mkdir':args?`Created: ${args}`:'Usage: mkdir <dirname>',
+'touch':args?`Created: ${args}`:'Usage: touch <filename>',
+'rm':args?`Removed: ${args}`:'Usage: rm <file>',
+'cp':args?`Copied: ${args}`:'Usage: cp <src> <dst>',
+'mv':args?`Moved: ${args}`:'Usage: mv <src> <dst>',
+'chmod':args?`Changed: ${args}`:'Usage: chmod <mode> <file>',
+'ps':'PID TTY TIME CMD\n1 ? 00:00:00 init\n2 ? 00:00:00 kthreadd',
+'kill':'Usage: kill <pid>',
+'man':args?`Manual for ${args}`:'Usage: man <command>',
+'history':'1 help\n2 clear\n3 whoami',
+'export':'Usage: export VAR=value',
+'alias':'Usage: alias name=value',
+'which':args?`/usr/bin/${args}`:'Usage: which <command>',
+'whereis':args?`${args}: /usr/bin/${args}`:'Usage: whereis <command>',
+'type':args?`${args} is a shell builtin`:'Usage: type <command>',
+'file':args?`${args}: ASCII text`:'Usage: file <filename>',
+'wc':args?`0 0 0 ${args}`:'Usage: wc <file>',
+'head':args?`First 10 lines of ${args}`:'Usage: head <file>',
+'tail':args?`Last 10 lines of ${args}`:'Usage: tail <file>',
+'sort':'Usage: sort <file>',
+'uniq':'Usage: uniq <file>',
+'cut':'Usage: cut -f <fields> <file>',
+'sed':'Usage: sed <script> <file>',
+'awk':'Usage: awk <script> <file>',
+'tr':'Usage: tr <set1> <set2>',
+'xargs':'Usage: xargs <command>',
+'curl':'Usage: curl <url>',
+'wget':'Usage: wget <url>',
+'ssh':'Usage: ssh <user@host>',
+'scp':'Usage: scp <src> <dst>',
+'ping':args?`PING ${args}: 56 data bytes`:'Usage: ping <host>',
+'netstat':'Proto Recv-Q Send-Q Local Address Foreign Address State',
+'dig':args?`; <<>> DiG 9.16.1 <<>> ${args}`:'Usage: dig <domain>',
+'nslookup':args?`Server: 8.8.8.8\nAddress: 8.8.8.8#53`:'Usage: nslookup <domain>',
+'git':'Usage: git <command>',
+'make':'Usage: make <target>',
+'gcc':'Usage: gcc <file.c>',
+'python':'Python 3.11.0',
+'node':'v18.0.0',
+'npm':'8.0.0',
+'pip':'pip 22.0.0',
+'vim':'~\n~ VIM ~\n~',
+'nano':'GNU nano 6.0',
+'emacs':'GNU Emacs 27.1',
+'less':'(END)',
+'more':'(END)',
+'date':new Date().toString(),
+'uptime':'up 1 day, 2:30, 1 user, load average: 0.10, 0.15, 0.12',
+'hostname':'talcumOS',
+'df':'/dev/root 7.0G 2.0G 5.0G 29% /',
+'du':args?`4.0K ${args}`:'Usage: du <path>',
+'free':'total used free\nMem: 1024 512 512',
+'ifconfig':'eth0: flags=UP,BROADCAST,RUNNING\ninet 192.168.1.100',
+'systemctl':'Usage: systemctl <command> <service>',
+'journalctl':'-- Logs begin at Mon 2024-01-01 00:00:00 UTC --',
+'dmesg':'[0.000000] Linux version 5.10.0',
+'lsmod':'Module Size Used by',
+'lspci':'00:00.0 Host bridge: Intel Corporation',
+'lsusb':'Bus 001 Device 001: ID 1d6b:0002',
+'fdisk':'Disk /dev/sda: 100 GiB',
+'parted':'GNU Parted 3.3',
+'mount':'/ on /dev/root type ext4 (rw,relatime)',
+'umount':'Usage: umount <mount_point>',
+'tar':'Usage: tar <options> <file>',
+'gzip':'Usage: gzip <file>',
+'zip':'Usage: zip <archive> <files>',
+'unzip':'Archive: test.zip',
+'md5sum':args?`d41d8cd98f00b204e9800998ecf8427e ${args}`:'Usage: md5sum <file>',
+'sha256sum':args?`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 ${args}`:'Usage: sha256sum <file>',
+'base64':'Usage: base64 <file>',
+'gdb':'GNU gdb (GDB) 10.1',
+'strace':'Usage: strace <command>',
+'ltrace':'Usage: ltrace <command>',
+'valgrind':'Usage: valgrind <program>',
+'perf':'Usage: perf <command>',
+'iotop':'Total DISK READ: 0.00 B/s | Total DISK WRITE: 0.00 B/s',
+'sysstat':'System Activity Report',
+'collectd':'collectd 5.12.0',
+'prometheus':'Prometheus Server',
+'elasticsearch':'Elasticsearch 7.0.0',
+'kibana':'Kibana 7.0.0',
+'splunk':'Splunk Enterprise',
+'datadog':'Datadog Agent',
+'newrelic':'New Relic Agent',
+'dynatrace':'Dynatrace OneAgent',
+'appdynamics':'AppDynamics Agent',
+'jaeger':'Jaeger Tracing',
+'zipkin':'Zipkin Distributed Tracing',
+'honeycomb':'Honeycomb Observability'
+};
+if(cmd==='clear'){o.innerHTML='$ ';i.value='';return;}
+else if(cmd==='echo')r=args;
+else if(d[cmd])r=d[cmd];
+else if(cmd)r=`bash: ${cmd}: command not found`;
+o.innerHTML+=`${c}\n${r?r+'\n':''}$ `;i.value='';o.parentElement.scrollTop=o.parentElement.scrollHeight;
+}
+}
 
-function terminalCommand(e){if(e.key==="Enter"){const input=document.getElementById("terminal-input");const output=document.getElementById("terminal-output");const cmd=input.value.trim();let response="";if(cmd==="help")response="Commands: help, clear, echo <text>, date, pwd\n";else if(cmd==="clear"){output.textContent="$ ";input.value="";return}else if(cmd.startsWith("echo "))response=cmd.substring(5)+"\n";else if(cmd==="date")response=new Date().toString()+"\n";else if(cmd==="pwd")response="/home/talcumOS\n";else response="Command not found: "+cmd+"\n";output.textContent+=response+"$ ";input.value="";output.parentElement.scrollTop=output.parentElement.scrollHeight}}
+// Export
+function copyCode(){const t=document.createElement('textarea');t.value=document.getElementById('export-code').textContent;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);alert('Copied!');}
 
-function loadYouTube(){const input=document.getElementById("youtube-input").value;if(!input)return;let videoId=input;if(input.includes("youtube.com"))videoId=new URL(input).searchParams.get("v");else if(input.includes("youtu.be"))videoId=input.split("/").pop();const player=document.getElementById("youtube-player");const proxyUrl=PROXY_URLS.invidious;player.innerHTML=`<iframe src="${proxyUrl}/embed/${videoId}" allowfullscreen></iframe>`;player.classList.remove("hidden")}
-
-function loadCustomApp(){const url=document.getElementById("custom-url").value;if(!url)return;const container=document.getElementById("custom-app-container");container.innerHTML=`<iframe src="${url}" style="width:100%;height:100%;border:none"></iframe>`}
-
-function toggleDarkMode(){darkMode=!darkMode;document.body.style.filter=darkMode?"invert(1)":"invert(0)"}
+// Initialize apps on load
+window.addEventListener('load',()=>{
+const apps=[
+{id:'notes',name:'Notes',color:'#FF9F0A',icon:'<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/>'},
+{id:'calculator',name:'Calculator',color:'#1C1C1E',icon:'<rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="7" cy="9" r="1"/><circle cx="12" cy="9" r="1"/><circle cx="17" cy="9" r="1"/><circle cx="7" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="17" cy="14" r="1"/><circle cx="7" cy="19" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="17" cy="19" r="1"/>'},
+{id:'store',name:'Store',color:'#007AFF',icon:'<path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-0.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-0.9-2-2-2z"/>'},
+{id:'mail',name:'Mail',color:'#0055D4',icon:'<path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>'},
+{id:'invidious',name:'Invidious',color:'#FF0000',icon:'<path d="M10 15l5.19-3L10 9v6"/>'},
+{id:'ai',name:'AI Chat',color:'#AF52DE',icon:'<path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.27A7 7 0 0 1 14 22h-4a7 7 0 0 1-6.73-3H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>'},
+{id:'files',name:'Files',color:'#5AC8FA',icon:'<path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>'},
+{id:'terminal',name:'Terminal',color:'#000',icon:'<path d="M4 17l6-6-6-6 1.41-1.41L12.83 11 5.41 18.41 4 17zm8 0h8v-2h-8v2z" fill="#34C759"/>'},
+{id:'exit',name:'Exit',color:'#FF3B30',icon:'<path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>'}
+];
+const grid=document.getElementById('app-grid');
+const dock=document.getElementById('dock');
+apps.forEach((app,i)=>{
+const icon=`<div class="app-icon" onclick="openApp('${app.id}')"><div class="icon-box" style="background:${app.color}"><svg viewBox="0 0 24 24" fill="#fff">${app.icon}</svg></div><div class="app-label">${app.name}</div></div>`;
+grid.innerHTML+=icon;
+if(i<4)dock.innerHTML+=icon;
+});
+});
 </script>
 </body>
 </html>
