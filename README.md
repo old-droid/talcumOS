@@ -1,131 +1,65 @@
-# talcumOS v2.0 - Optimized iOS-like Operating System
+# talcumOS v2.5
 
-A lightweight, responsive, link-based operating system designed to run smoothly on low-memory devices like iPad Air 1 (1GB RAM).
+Optimized for **iPad Air 1 (iOS 12.5.8)**. talcumOS is a lightweight, single-file HTML operating system designed for performance, security, and low-memory environments.
 
-## 🚀 Features
+## 🚀 Performance Optimizations for iPad Air 1
 
-### Core Features
-- **Link-Based Storage**: All data is encoded in the URL hash, no server required
-- **Responsive Design**: Automatically adapts to any screen size using CSS `clamp()` and viewport units
-- **Optimized Performance**: Minimal CSS, efficient JavaScript, optimized for 1GB RAM devices
-- **iOS-Inspired UI**: Native iOS aesthetic with glassmorphism effects
-- **Persistent Dock**: Quick access to favorite apps
+*   **DOM Reduction**: Minimized static DOM elements and transitioned to dynamic, on-demand rendering using `insertAdjacentHTML`.
+*   **JS Efficiency**: Replaced heavy SVG paths with high-quality cloud-hosted PNG icons to reduce browser rendering load.
+*   **Memory Management**: Implemented `requestAnimationFrame` for UI updates to prevent UI thread blocking and lag.
+*   **Hardware Acceleration**: Used `will-change` and `backdrop-filter` sparingly to leverage GPU without overwhelming the A7 chip.
 
-### Built-in Apps
+## 🛠 Talcum API (v2.0)
 
-1. **Notes** - Simple note-taking with automatic data persistence
-2. **Calculator** - Full-featured calculator with basic operations
-3. **Weather** - Weather information display
-4. **Files** - File browser interface
-5. **Music** - Music player with playback controls
-6. **YouTube** - Video player with Invidious proxy support
-7. **Terminal** - Command-line interface with basic commands
-8. **Settings** - System settings and preferences
-9. **Custom App Proxy** - Load external web apps via iframe
-10. **Exit** - Generate and save data link
+The Talcum API provides persistent data storage and is now fully compatible with **iframes**.
 
-## ⚡ Performance Optimizations
+### Methods
 
-### Memory Optimization
-- Minimal DOM structure
-- Efficient CSS with no animations on scroll
-- Lazy-loaded app windows
-- No external dependencies or frameworks
+| Method | Description |
+| :--- | :--- |
+| `talcum.store(key, value)` | Saves a string value to the encrypted OS state. |
+| `talcum.pull(key)` | Retrieves a saved value by key. |
+| `talcum.list()` | Returns an array of all saved keys. |
+| `talcum.remove(key)` | Deletes a key-value pair from storage. |
 
-### Responsive Design
-- Uses CSS `clamp()` for fluid typography and spacing
-- Grid layout adapts to screen size automatically
-- Aspect ratio preservation for all elements
-- Safe area insets for notched devices
+### Iframe Integration
 
-### Network Optimization
-- Single HTML file (~30KB)
-- No external API calls (except YouTube proxy)
-- Efficient data compression using Base64 encoding
-- Works completely offline after initial load
+To use the Talcum API inside an iframe app, send messages to the parent window:
 
-## 📱 Usage
+```javascript
+// Example: Storing data from an iframe
+window.parent.postMessage({
+    source: 'talcum-api',
+    action: 'store',
+    key: 'my_app_data',
+    value: 'Hello from Iframe!',
+    requestId: Date.now()
+}, '*');
 
-### Login
-1. Leave the passcode field empty or enter any value
-2. Paste a previously saved data link in the "Data Code" field, or leave blank to start fresh
-3. Tap "Unlock"
-
-### Save Your Data
-1. Tap the "Exit" app
-2. Copy the generated link
-3. Store it in Google Keep Web or any note-taking app
-4. Share the link to access your data on any device
-
-### Add Custom Apps
-1. Open the "Custom App" app
-2. Enter the URL of any web app
-3. Tap "Load App"
-4. The app will load in an iframe
-
-### YouTube Videos
-1. Open the "YouTube" app
-2. Enter a YouTube video ID or full URL
-3. Tap "Load Video"
-4. Uses Invidious proxy for privacy
-
-## 🛠️ Technical Details
-
-### Architecture
-- Single-file HTML5 application
-- No build process required
-- Works on any modern browser
-- Progressive Web App (PWA) capable
-
-### Data Format
-Data is stored as Base64-encoded JSON in the URL hash:
-```
-https://example.com/index.html#eyJub3RlcyI6IkhlbGxvIHdvcmxkIiwibXVzaWMiOnsidGl0bGUiOiJTb25nIn19
+// Listen for response
+window.addEventListener('message', (event) => {
+    if (event.data.source === 'talcum-os') {
+        console.log('Action result:', event.data.result);
+    }
+});
 ```
 
-### Browser Compatibility
-- iOS Safari 12+
-- Android Chrome/Firefox
-- Desktop browsers
-- iPad Air 1 and newer
+## 📱 Built-in Apps
 
-## ⌨️ Keyboard Shortcuts
+1.  **Notes**: Secure, local-first note taking.
+2.  **Calculator**: Standard iOS-style utility.
+3.  **Files**: Manage data stored via the Talcum API.
+4.  **Terminal**: Functional UNIX-like shell with basic utilities.
+5.  **AI Chat**: Privacy-focused assistant powered by Pollinations AI.
+6.  **Store**: Install custom apps via JSON repositories or direct URLs.
 
-### Terminal
-- `help` - Show available commands
-- `clear` - Clear terminal
-- `echo <text>` - Print text
-- `date` - Show current date/time
-- `pwd` - Show current directory
+## 🔐 Security
 
-## 📲 Tips for iPad Air 1
+All data is stored in a local `osData` object. To persist data across sessions:
+1.  Click **Exit**.
+2.  The OS will encrypt your entire state (apps, notes, data) using **AES-GCM (256-bit)** with your passcode.
+3.  Copy the generated **Data Code**.
+4.  Next time you log in, paste the code and your passcode to restore everything.
 
-1. **Add to Home Screen**: Use "Add to Home Screen" in Safari for app-like experience
-2. **Disable Zoom**: Pinch-zoom is disabled for better performance
-3. **Clear Cache**: Periodically clear browser cache to free up memory
-4. **Backup Data**: Always save your data link to Google Keep or similar service
-
-## 📊 File Size
-- Optimized for minimal bandwidth
-- Single file: ~30KB (minified)
-- No external dependencies
-- Loads instantly on 3G connections
-
-## 🔒 Privacy & Security
-- All data stored locally in URL hash
-- No server-side storage
-- No tracking or analytics
-- Works completely offline
-
-## 🎯 Future Enhancements
-- Photo gallery app
-- Voice memo recorder
-- Reminders/To-Do list
-- Dark mode improvements
-- Keyboard support
-
-## 📄 License
-Open source - Feel free to modify and distribute
-
-## 💬 Support
-For issues or feature requests, visit the GitHub repository.
+---
+*Created for the talcumOS community.*
