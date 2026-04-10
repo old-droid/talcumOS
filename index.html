@@ -285,11 +285,11 @@ window.addEventListener('message', function(event) {
 
 // Icons (ImgBB Hosted)
 const ICONS = {
-    notes: 'https://i.ibb.co/tMh4Xy5x/Apple-Settings-512.png',
-    calculator: 'https://i.ibb.co/fG8S1W8/calc.png',
+    notes: 'https://i.ibb.co/jZ6DstKV/images.jpg',
+    calculator: 'https://i.ibb.co/RkYrhRcp/images.png',
     store: 'https://i.ibb.co/Z61yv3N3/200-1.png',
     files: 'https://i.ibb.co/042NTpt/apple-files.jpg',
-    terminal: 'https://i.ibb.co/hZ7p6z7/terminal.png',
+    terminal: 'https://i.ibb.co/zV0b2WB1/images-1.jpg',
     ai: 'https://i.ibb.co/vX5S1W8/ai.png',
     settings: 'https://i.ibb.co/tMh4Xy5x/Apple-Settings-512.png',
     exit: 'https://i.ibb.co/vX5S1W8/exit.png'
@@ -410,9 +410,7 @@ function openCustomApp(id){
     const content=appWindow.querySelector('.app-content');
     
     if(app.type==='redirect'){
-        // Redirect: open in new tab
-        window.open(app.url,'_blank');
-        return;
+        content.innerHTML=`<div style="text-align:center;padding:40px"><p style="color:#666;font-size:16px;margin-bottom:20px">Opening external app...</p><button onclick="window.open('${app.url}','_blank');" style="background:var(--ios-blue);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:16px;cursor:pointer">Open in New Tab</button><p style="color:#999;font-size:12px;margin-top:20px">Tap Done to return</p></div>`;
     } else {
         // Iframe: embed in app with sandbox for security
         content.innerHTML=`<iframe src="${app.url}" style="width:100%;height:100%;border:none;background:#fff" allow="geolocation;microphone;camera" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>`;
@@ -444,14 +442,24 @@ function openNote(id){
 function saveNote(){if(!actN)return;const n=osData.notes.find(x=>x.id===actN);if(n){n.title=document.getElementById('note-title').value;n.body=document.getElementById('note-body').value;}}
 function notesBack(){saveNote();actN=null;document.getElementById('notes-list').classList.remove('hidden');document.getElementById('notes-editor').classList.add('hidden');document.getElementById('notes-back').style.display='none';renderNotes();}
 
-// Files
+// Files with folder support
 function renderFiles(){
-    const c=document.getElementById('files-content'); c.innerHTML='';
+    const c=document.getElementById('files-content'); c.innerHTML='<div style="padding:12px;display:flex;gap:8px"><button class="btn-primary" style="flex:1;margin:0;font-size:13px;padding:8px" onclick="newFile()">+ File</button><button class="btn-primary" style="flex:1;margin:0;font-size:13px;padding:8px;background:#E5E5EA;color:var(--ios-blue)" onclick="newFolder()">+ Folder</button></div>';
     const k=talcum.list();
-    if(k.length===0) {c.innerHTML='<p style="padding:40px;text-align:center;color:#999">No files found</p>';return;}
+    if(k.length===0) {c.insertAdjacentHTML('beforeend','<p style="padding:40px;text-align:center;color:#999">No files found</p>');return;}
     k.forEach(x=>{
-        c.insertAdjacentHTML('beforeend', `<div class="ios-list-item"><div><div style="font-weight:500;color:#000">${x}</div><div style="font-size:11px;color:#999">${talcum.pull(x).length} bytes</div></div><span style="color:var(--ios-red);cursor:pointer" onclick="talcum.remove('${x}');renderFiles()">Delete</span></div>`);
+        const isDir=x.startsWith('dir_');
+        const icon=isDir?'📁':'📄';
+        c.insertAdjacentHTML('beforeend',`<div class="ios-list-item"><div><div style="font-weight:500;color:#000">${icon} ${x}</div><div style="font-size:11px;color:#999">${isDir?'folder':talcum.pull(x).length+' bytes'}</div></div><span style="color:var(--ios-red);cursor:pointer;font-size:13px" onclick="talcum.remove('${x}');renderFiles()">Delete</span></div>`);
     });
+}
+function newFile(){
+    const n=prompt('File name:');
+    if(n)talcum.store(n,''),renderFiles();
+}
+function newFolder(){
+    const n=prompt('Folder name:');
+    if(n)talcum.store('dir_'+n,JSON.stringify({type:'dir',created:new Date().toISOString()})),renderFiles();
 }
 
 // Storage
@@ -487,21 +495,15 @@ function calc(b){
     }
 }
 
-// Terminal
+// Terminal - Dynamic Commands
 function termCmd(e){
     if(e.key==='Enter'){
-        const i=document.getElementById('term-in'),o=document.getElementById('term-out'),c=i.value.trim(),cmd=c.split(' ')[0].toLowerCase();
-        let r='';
-        if(cmd==='help') r='Available: help, clear, date, whoami, ls, fortune, uptime';
-        else if(cmd==='clear'){o.innerHTML='';i.value='';return;}
-        else if(cmd==='date') r=new Date().toString();
-        else if(cmd==='whoami') r='mobile';
-        else if(cmd==='ls') r=talcum.list().join('  ') || 'No files';
-        else if(cmd==='uptime') r='up 12:34, 1 user, load average: 0.08, 0.05, 0.01';
-        else if(cmd==='fortune') r='Optimization is the root of all performance.';
-        else if(cmd) r='bash: command not found: ' + cmd;
-        o.insertAdjacentHTML('beforeend', `<div>$ ${c}</div><div>${r}</div>`);
-        i.value=''; o.parentElement.scrollTop=o.parentElement.scrollHeight;
+        const i=document.getElementById('term-in'),o=document.getElementById('term-out'),c=i.value.trim();
+        if(!window.execTerminalCommand)return;
+        const result=window.execTerminalCommand(c);
+        if(result.clear){o.innerHTML='';i.value='';return;}
+        o.insertAdjacentHTML('beforeend',`<div>$ ${c}</div><div>${result}</div>`);
+        i.value='';o.parentElement.scrollTop=o.parentElement.scrollHeight;
     }
 }
 
@@ -587,5 +589,6 @@ function copyCode(){
     alert('Code copied!');
 }
 </script>
+<script src="terminal.js"></script>
 </body>
 </html>
