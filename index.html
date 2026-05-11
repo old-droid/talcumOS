@@ -70,7 +70,7 @@ input{-webkit-user-select:text;user-select:text;color:#000;-webkit-appearance:no
 .selector-options{display:flex;gap:8px}
 .selector-btn{flex:1;padding:10px;border-radius:8px;border:1.5px solid #ccc;background:#fff;color:#000;font-size:13px;font-weight:500;cursor:pointer;-webkit-appearance:none;-webkit-user-select:none;user-select:none;min-height:40px}
 .selector-btn.active{background:var(--ios-blue);color:#fff;border-color:var(--ios-blue)}
-@media(max-width:320px){.app-grid{grid-template-columns:repeat(3,1fr);gap:12px}.app-icon .icon-box{width:48px;height:48px}.calc-btn{font-size:18px}.nav-title{font-size:15px}.lock-time{font-size:48px}}
+@media(max-width:320px){.app-grid{grid-template-columns:repeat(4,1fr);gap:12px}.app-icon .icon-box{width:48px;height:48px}.calc-btn{font-size:18px}.nav-title{font-size:15px}.lock-time{font-size:48px}}
 @supports(padding:max(0px)){#home-screen{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}.ios-list{margin-left:max(10px,env(safe-area-inset-left));margin-right:max(10px,env(safe-area-inset-right))}}
 </style>
 </head>
@@ -115,54 +115,59 @@ input{-webkit-user-select:text;user-select:text;color:#000;-webkit-appearance:no
 <button class="btn-primary" style="margin:0;flex:1" onclick="addCustomRepo()">Add Repo</button>
 <button class="btn-primary" style="margin:0;flex:1;background:#E5E5EA;color:var(--ios-blue)" onclick="document.getElementById('custom-app-modal').style.display='flex'">Custom App</button>
 </div>
-<div id="store-list"></div>
+<div class="ios-list" id="store-list" style="margin:0"></div>
 </div>
 </div>
 
 <div id="app-calculator" class="app-window">
 <div class="nav-bar"><span class="nav-title">Calculator</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content" style="background:#000;display:flex;flex-direction:column">
+<div class="app-content">
 <div class="calc-display" id="calc-display">0</div>
 <div class="calc-grid">
 <button class="calc-btn" style="background:#A5A5A5;color:#000" onclick="calc('C')">C</button>
-<button class="calc-btn" style="background:#A5A5A5;color:#000" onclick="calc('neg')">+/-</button>
+<button class="calc-btn" style="background:#A5A5A5;color:#000" onclick="calc('+/-')">+/-</button>
 <button class="calc-btn" style="background:#A5A5A5;color:#000" onclick="calc('%')">%</button>
-<button class="calc-btn" style="background:#FF9F0A;color:#fff" onclick="calc('/')">÷</button>
+<button class="calc-btn" style="background:var(--ios-orange);color:#fff" onclick="calc('/')">÷</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('7')">7</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('8')">8</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('9')">9</button>
-<button class="calc-btn" style="background:#FF9F0A;color:#fff" onclick="calc('*')">×</button>
+<button class="calc-btn" style="background:var(--ios-orange);color:#fff" onclick="calc('*')">×</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('4')">4</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('5')">5</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('6')">6</button>
-<button class="calc-btn" style="background:#FF9F0A;color:#fff" onclick="calc('-')">-</button>
+<button class="calc-btn" style="background:var(--ios-orange);color:#fff" onclick="calc('-')">-</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('1')">1</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('2')">2</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('3')">3</button>
-<button class="calc-btn" style="background:#FF9F0A;color:#fff" onclick="calc('+')">+</button>
-<button class="calc-btn" style="background:#333;color:#fff;grid-column:span 2" onclick="calc('0')">0</button>
+<button class="calc-btn" style="background:var(--ios-orange);color:#fff" onclick="calc('+')">+</button>
+<button class="calc-btn" style="background:#333;color:#fff;grid-column:span 2;aspect-ratio:auto;border-radius:30px;justify-content:flex-start;padding-left:24px" onclick="calc('0')">0</button>
 <button class="calc-btn" style="background:#333;color:#fff" onclick="calc('.')">.</button>
-<button class="calc-btn" style="background:#FF9F0A;color:#fff" onclick="calc('=')">=</button>
+<button class="calc-btn" style="background:var(--ios-orange);color:#fff" onclick="calc('=')">=</button>
 </div>
 </div>
-</div>
-
-<div id="app-terminal" class="app-window" style="background:#000">
-<div class="nav-bar" style="background:#1C1C1E;border-bottom:1px solid #333"><span class="nav-title" style="color:#34C759">Terminal</span><span class="nav-btn" style="color:#34C759" onclick="closeApp()">Done</span></div>
-<div class="app-content" style="background:#000"><div class="terminal-output" id="term-out">talcumOS UNIX 2.6<br>Type 'help' for commands<br>$ </div><input type="text" class="terminal-input" id="term-in" onkeydown="termCmd(event)" placeholder=""></div>
 </div>
 
 <div id="app-files" class="app-window">
-<div class="nav-bar"><span class="nav-title">Files</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
+<div class="nav-bar"><span class="nav-btn" id="files-back" onclick="filesBack()" style="display:none">Back</span><span class="nav-title">Files</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
 <div class="app-content" id="files-content"></div>
+</div>
+
+<div id="app-terminal" class="app-window">
+<div class="nav-bar"><span class="nav-title">Terminal</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
+<div class="app-content" style="background:#000;display:flex;flex-direction:column">
+<div style="flex:1;overflow-y:auto;padding-bottom:20px" id="term-out-wrap"><div class="terminal-output" id="terminal-output">talcumOS Terminal v1.0<br>Type 'help' for commands.</div></div>
+<div style="padding:10px;border-top:0.5px solid #333"><input type="text" class="terminal-input" id="terminal-input" placeholder="$ command..." spellcheck="false" autocomplete="off"></div>
+</div>
 </div>
 
 <div id="app-ai" class="app-window">
 <div class="nav-bar"><span class="nav-title">AI Chat</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
 <div class="app-content" style="display:flex;flex-direction:column">
-<div id="chat-messages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column"></div>
-<div style="padding:10px;border-top:0.5px solid rgba(60,60,67,0.1);display:flex;gap:6px;background:#fff">
-<input type="text" id="chat-input" placeholder="Ask anything..." class="search-input" style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendChat()">
+<div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column" id="chat-messages">
+<div class="chat-msg ai">Hello! I am your talcumOS AI assistant. How can I help you today?</div>
+</div>
+<div style="padding:10px;background:#fff;border-top:0.5px solid #ccc;display:flex;gap:8px">
+<input type="text" id="chat-input" class="search-input" placeholder="Ask anything..." style="flex:1">
 <button class="nav-btn" onclick="sendChat()">Send</button>
 </div>
 </div>
@@ -170,14 +175,11 @@ input{-webkit-user-select:text;user-select:text;color:#000;-webkit-appearance:no
 
 <div id="app-settings" class="app-window">
 <div class="nav-bar"><span class="nav-title">Settings</span><span class="nav-btn" onclick="closeApp()">Done</span></div>
-<div class="app-content" style="padding:16px">
+<div class="app-content">
 <div class="ios-list">
 <div class="ios-list-item" style="flex-direction:column;align-items:flex-start">
 <div style="font-weight:600;margin-bottom:8px;color:#000">Storage</div>
-<div style="width:100%;margin-bottom:8px">
-<div style="font-size:12px;color:#666;margin-bottom:4px"><span id="storage-used">0</span> MB of <span id="storage-total">100</span> MB used</div>
-<div class="storage-bar"><div class="storage-fill" id="storage-bar" style="width:0%"></div></div>
-</div>
+<div class="storage-bar"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
 <div style="font-size:11px;color:#999">Data stored: <span id="data-count">0</span> items</div>
 </div>
 </div>
@@ -303,6 +305,7 @@ const ICONS = {
     music: 'https://i.ibb.co/vX5S1W8/music.png',
     tv: 'https://i.ibb.co/vX5S1W8/tv.png'
 };
+
 // Boot
 setTimeout(()=>{document.getElementById('splash').style.display='none';},800);
 
@@ -346,7 +349,8 @@ function openApp(id){
             document.getElementById('exit-modal').style.display='flex';
         });
         return;
-      const e=document.getElementById('app-'+id);
+    }
+    const e=document.getElementById('app-'+id);
     if(!e) {
         if (['browser', 'messages', 'photos', 'camera', 'mail', 'calendar', 'clock', 'maps', 'music', 'tv'].includes(id)) {
             TalcumRuntime.launch(id);
@@ -366,7 +370,14 @@ function openApp(id){
 
 function closeApp(){
     saveNote();
-    if(actA) document.getElementById('app-'+actA).style.display='none';
+    if(actA && actA.startsWith('custom-')){
+        const e=document.getElementById('app-'+actA);
+        if(e) e.style.display='none';
+    } else if(actA){
+        const e=document.getElementById('app-'+actA);
+        if(e) e.style.display='none';
+        else TalcumRuntime.suspend(actA);
+    }
     actA=null;
     document.getElementById('home-screen').style.display='block';
     document.getElementById('dock').style.display='flex';
@@ -392,7 +403,9 @@ const APPS = [
     {id:'music',name:'Music',icon:ICONS.music},
     {id:'tv',name:'TV',icon:ICONS.tv},
     {id:'exit',name:'Exit',icon:ICONS.exit}
-];tion initHomeScreen(){
+];
+
+function initHomeScreen(){
     const grid=document.getElementById('app-grid');
     const dock=document.getElementById('dock');
     grid.innerHTML=''; dock.innerHTML='';
@@ -404,7 +417,7 @@ const APPS = [
         if(i<4) dock.insertAdjacentHTML('beforeend', html);
     });
     
-    // Installed custom apps - FIXED: Now properly renders installed apps
+    // Installed custom apps
     osData.customApps.forEach((app, i)=>{
         if(osData.installedApps.includes(app.id)){
             const html=`<div class="app-icon" onclick="openCustomApp('${app.id}')"><div class="icon-box"><img src="${app.icon}" alt="${app.name}" loading="lazy"></div><div class="app-label">${app.name}</div></div>`;
@@ -417,7 +430,10 @@ function openCustomApp(id){
     const app=osData.customApps.find(x=>x.id===id);
     if(!app)return;
     
-    if(actA) document.getElementById('app-'+actA).style.display='none';
+    if(actA) {
+        const e=document.getElementById('app-'+actA);
+        if(e) e.style.display='none';
+    }
     
     // Create dynamic app window
     let appWindow=document.getElementById('app-custom-'+id);
@@ -435,7 +451,6 @@ function openCustomApp(id){
     if(app.type==='redirect'){
         content.innerHTML=`<div style="text-align:center;padding:40px"><p style="color:#666;font-size:16px;margin-bottom:20px">Opening external app...</p><button onclick="window.open('${app.url}','_blank');" style="background:var(--ios-blue);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:16px;cursor:pointer">Open in New Tab</button><p style="color:#999;font-size:12px;margin-top:20px">Tap Done to return</p></div>`;
     } else {
-        // Iframe: embed in app with sandbox for security
         content.innerHTML=`<iframe src="${app.url}" style="width:100%;height:100%;border:none;background:#fff" allow="geolocation;microphone;camera" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>`;
     }
     
@@ -471,63 +486,15 @@ function renderFiles(){
     const k=talcum.list();
     if(k.length===0) {c.insertAdjacentHTML('beforeend','<p style="padding:40px;text-align:center;color:#999">No files found</p>');return;}
     k.forEach(x=>{
-        const isDir=x.startsWith('dir_');
-        const icon=isDir?'📁':'📄';
-        c.insertAdjacentHTML('beforeend',`<div class="ios-list-item"><div><div style="font-weight:500;color:#000">${icon} ${x}</div><div style="font-size:11px;color:#999">${isDir?'folder':talcum.pull(x).length+' bytes'}</div></div><span style="color:var(--ios-red);cursor:pointer;font-size:13px" onclick="talcum.remove('${x}');renderFiles()">Delete</span></div>`);
+        c.insertAdjacentHTML('beforeend', `<div class="ios-list-item" onclick="openFile('${x}')"><div><div style="font-weight:600;color:#000">${x}</div></div><span style="color:#999">›</span></div>`);
     });
 }
-function newFile(){
-    const n=prompt('File name:');
-    if(n)talcum.store(n,''),renderFiles();
-}
-function newFolder(){
-    const n=prompt('Folder name:');
-    if(n)talcum.store('dir_'+n,JSON.stringify({type:'dir',created:new Date().toISOString()})),renderFiles();
-}
 
-// Storage
 function updateStorage(){
-    const data = JSON.stringify(osData);
-    const bytes = new Blob([data]).size;
-    const mb = (bytes / 1024 / 1024).toFixed(2);
-    const total = 100;
-    const percent = (mb / total * 100).toFixed(0);
-    document.getElementById('storage-used').textContent = mb;
-    document.getElementById('storage-bar').style.width = percent + '%';
-    document.getElementById('data-count').textContent = talcum.list().length;
-}
-
-// Calculator
-let cS={d:'0',p:null,o:null,r:false};
-function calc(b){
-    const d=document.getElementById('calc-display');
-    if(b==='C'){d.textContent='0';cS={d:'0',p:null,o:null,r:false};}
-    else if(b==='neg')d.textContent=String(-parseFloat(d.textContent));
-    else if(b==='%')d.textContent=String(parseFloat(d.textContent)/100);
-    else if(['+','-','*','/'].includes(b)){cS.p=parseFloat(d.textContent);cS.o=b;cS.r=true;}
-    else if(b==='='){
-        if(cS.o){
-            const c=parseFloat(d.textContent); let r=0;
-            if(cS.o==='+')r=cS.p+c; if(cS.o==='-')r=cS.p-c;
-            if(cS.o==='*')r=cS.p*c; if(cS.o==='/')r=c!==0?cS.p/c:'Error';
-            d.textContent=r; cS.o=null; cS.r=true;
-        }
-    } else {
-        if(cS.r){d.textContent=b;cS.r=false;}
-        else d.textContent=d.textContent==='0'&&b!=='.'?b:d.textContent+b;
-    }
-}
-
-// Terminal - Dynamic Commands
-function termCmd(e){
-    if(e.key==='Enter'){
-        const i=document.getElementById('term-in'),o=document.getElementById('term-out'),c=i.value.trim();
-        if(!window.execTerminalCommand)return;
-        const result=window.execTerminalCommand(c);
-        if(result.clear){o.innerHTML='';i.value='';return;}
-        o.insertAdjacentHTML('beforeend',`<div>$ ${c}</div><div>${result}</div>`);
-        i.value='';o.parentElement.scrollTop=o.parentElement.scrollHeight;
-    }
+    const k=talcum.list();
+    document.getElementById('data-count').textContent=k.length;
+    const p=Math.min(100, (k.length / 50) * 100);
+    document.getElementById('storage-fill').style.width=p+'%';
 }
 
 // AI
