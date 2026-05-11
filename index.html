@@ -292,9 +292,17 @@ const ICONS = {
     terminal: 'https://i.ibb.co/zV0b2WB1/images-1.jpg',
     ai: 'https://i.ibb.co/vX5S1W8/ai.png',
     settings: 'https://i.ibb.co/tMh4Xy5x/Apple-Settings-512.png',
-    exit: 'https://i.ibb.co/vX5S1W8/exit.png'
+    exit: 'https://i.ibb.co/vX5S1W8/exit.png',
+    messages: 'https://i.ibb.co/vX5S1W8/messages.png',
+    photos: 'https://i.ibb.co/vX5S1W8/photos.png',
+    camera: 'https://i.ibb.co/vX5S1W8/camera.png',
+    mail: 'https://i.ibb.co/vX5S1W8/mail.png',
+    calendar: 'https://i.ibb.co/vX5S1W8/calendar.png',
+    clock: 'https://i.ibb.co/vX5S1W8/clock.png',
+    maps: 'https://i.ibb.co/vX5S1W8/maps.png',
+    music: 'https://i.ibb.co/vX5S1W8/music.png',
+    tv: 'https://i.ibb.co/vX5S1W8/tv.png'
 };
-
 // Boot
 setTimeout(()=>{document.getElementById('splash').style.display='none';},800);
 
@@ -338,9 +346,16 @@ function openApp(id){
             document.getElementById('exit-modal').style.display='flex';
         });
         return;
+      const e=document.getElementById('app-'+id);
+    if(!e) {
+        if (['browser', 'messages', 'photos', 'camera', 'mail', 'calendar', 'clock', 'maps', 'music', 'tv'].includes(id)) {
+            TalcumRuntime.launch(id);
+            actA = id;
+            document.getElementById('home-screen').style.display='none';
+            document.getElementById('dock').style.display='none';
+        }
+        return;
     }
-    const e=document.getElementById('app-'+id);
-    if(!e) return;
     if(actA) document.getElementById('app-'+actA).style.display='none';
     e.style.display='flex';
     actA=id;
@@ -366,10 +381,18 @@ const APPS = [
     {id:'terminal',name:'Terminal',icon:ICONS.terminal},
     {id:'ai',name:'AI Chat',icon:ICONS.ai},
     {id:'settings',name:'Settings',icon:ICONS.settings},
+    {id:'browser',name:'Browser',icon:ICONS.store},
+    {id:'messages',name:'Messages',icon:ICONS.messages},
+    {id:'photos',name:'Photos',icon:ICONS.photos},
+    {id:'camera',name:'Camera',icon:ICONS.camera},
+    {id:'mail',name:'Mail',icon:ICONS.mail},
+    {id:'calendar',name:'Calendar',icon:ICONS.calendar},
+    {id:'clock',name:'Clock',icon:ICONS.clock},
+    {id:'maps',name:'Maps',icon:ICONS.maps},
+    {id:'music',name:'Music',icon:ICONS.music},
+    {id:'tv',name:'TV',icon:ICONS.tv},
     {id:'exit',name:'Exit',icon:ICONS.exit}
-];
-
-function initHomeScreen(){
+];tion initHomeScreen(){
     const grid=document.getElementById('app-grid');
     const dock=document.getElementById('dock');
     grid.innerHTML=''; dock.innerHTML='';
@@ -589,6 +612,8 @@ function copyCode(){
     alert('Code copied!');
 }
 </script>
+<script src="runtime.js"></script>
+<script src="lockscreen-widget.js"></script>
 <script src="terminal.js"></script>
 </body>
 </html>
